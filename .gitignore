@@ -1,20 +1,47 @@
+# ==========================================
 # Python
+# ==========================================
 backend/.venv/
-backend/__pycache__/
+**/__pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 *.egg-info/
+*.egg
 
+# ==========================================
 # Django
+# ==========================================
 backend/db.sqlite3
 backend/.env
 
-# React
+# Keep the media folder, ignore uploaded files
+backend/media/*
+!backend/media/.gitkeep
+
+# Static files collected in production
+backend/staticfiles/
+
+# ==========================================
+# React / Node
+# ==========================================
 frontend/node_modules/
 frontend/dist/
+npm-debug.log*
 
+# ==========================================
 # IDE
+# ==========================================
 .vscode/
+.idea/
 
-# OS
+# ==========================================
+# Operating System
+# ==========================================
 Thumbs.db
 .DS_Store
+
+# ==========================================
+# Logs
+# ==========================================
+*.log
