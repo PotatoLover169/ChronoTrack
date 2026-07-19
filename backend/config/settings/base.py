@@ -3,14 +3,18 @@ Base Django settings for ChronoTrack.
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Base directory: backend/
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# SECURITY
-SECRET_KEY = 'django-insecure-g)wt69q+-n$%1^h#l#0p$@pwvtc^3jvuwwi9h%4&$=_y_*9414'
+load_dotenv(BASE_DIR / ".env")
 
-DEBUG = False
+# SECURITY
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = []
 
@@ -55,12 +59,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
