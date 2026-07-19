@@ -20,14 +20,23 @@ ALLOWED_HOSTS = []
 
 # Applications
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-]
+    # Django Apps
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
+    # Local Apps
+    "apps.accounts",
+    "apps.dashboard",
+    "apps.tracker",
+    "apps.projects",
+    "apps.tasks",
+    "apps.reports",
+    "apps.clients",
+]
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
