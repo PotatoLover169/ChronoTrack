@@ -10,6 +10,9 @@ urlpatterns = [
     # Client API
     path("clients/", include("apps.clients.api.urls")),
 
-    # Projects
+    # Projects API
     path("projects/", include("apps.projects.api.urls")),
+
+    # Tasks API
+    path("tasks/", include("apps.tasks.api.urls")),
 ]
