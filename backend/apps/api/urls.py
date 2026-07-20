@@ -6,4 +6,7 @@ urlpatterns = [
 
     # Authentication API
     path("auth/", include("apps.accounts.api.urls")),
+
+    # Client API
+    path("clients/", include("apps.clients.api.urls")),
 ]
