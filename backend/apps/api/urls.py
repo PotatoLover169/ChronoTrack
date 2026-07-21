@@ -15,4 +15,7 @@ urlpatterns = [
 
     # Tasks API
     path("tasks/", include("apps.tasks.api.urls")),
+
+    # Tracker API
+    path("tracker/", include("apps.tracker.urls")),
 ]
