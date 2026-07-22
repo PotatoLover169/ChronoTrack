@@ -60,3 +60,16 @@ def stop_timer(*, user):
         time_entry.save()
 
         return time_entry
+
+def get_current_timer(*, user):
+    """
+    Return the user's currently running timer.
+    """
+
+    return TimeEntry.objects.filter(
+        owner=user,
+        status=TimeEntryStatus.RUNNING,
+    ).select_related(
+        "project",
+        "task",
+    ).first()

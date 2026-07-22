@@ -13,6 +13,17 @@ class ClientSummarySerializer(serializers.ModelSerializer):
         )
 
 
+class ProjectSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = (
+            "id",
+            "name",
+            "status",
+            "hourly_rate",
+        )
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     client = ClientSummarySerializer(read_only=True)
 

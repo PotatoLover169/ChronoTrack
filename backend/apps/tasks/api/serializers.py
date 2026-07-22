@@ -1,15 +1,18 @@
 from rest_framework import serializers
 
+from apps.projects.api.serializers import ProjectSummarySerializer
 from apps.projects.models import Project
 from apps.tasks.models import Task
 
 
-class ProjectSummarySerializer(serializers.ModelSerializer):
+class TaskSummarySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Project
+        model = Task
         fields = (
             "id",
-            "name",
+            "title",
+            "status",
+            "priority",
         )
 
 
@@ -52,7 +55,7 @@ class TaskSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         status = attrs.get(
             "status",
-            getattr(self.instance, "status", "todo")
+            getattr(self.instance, "status", "todo"),
         )
 
         attrs["completed"] = status == "completed"

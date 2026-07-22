@@ -7,12 +7,15 @@ from .exceptions import (
     NoRunningTimerError,
     TimerAlreadyRunningError,
 )
-from .serializers import StartTimerSerializer
+from .serializers import (
+    CurrentTimerSerializer,
+    StartTimerSerializer,
+)
 from .services import (
+    get_current_timer,
     start_timer,
     stop_timer,
 )
-
 
 class StartTimerView(APIView):
     permission_classes = [IsAuthenticated]
@@ -71,5 +74,30 @@ class StopTimerView(APIView):
                 "time_entry_id": time_entry.id,
                 "duration": str(time_entry.duration),
             },
+            status=status.HTTP_200_OK,
+        )
+
+class CurrentTimerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        time_entry = get_current_timer(
+            user=request.user,
+        )
+
+        if not time_entry:
+            return Response(
+                {
+                    "detail": "No running timer.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = CurrentTimerSerializer(
+            time_entry,
+        )
+
+        return Response(
+            serializer.data,
             status=status.HTTP_200_OK,
         )

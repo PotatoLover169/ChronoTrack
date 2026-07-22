@@ -1,7 +1,12 @@
+from django.utils import timezone
 from rest_framework import serializers
 
+from apps.projects.api.serializers import ProjectSummarySerializer
 from apps.projects.models import Project
+from apps.tasks.api.serializers import TaskSummarySerializer
 from apps.tasks.models import Task
+
+from .models import TimeEntry
 
 
 class StartTimerSerializer(serializers.Serializer):
@@ -30,8 +35,67 @@ class StartTimerSerializer(serializers.Serializer):
         if task and task.project != project:
             raise serializers.ValidationError(
                 {
-                    "task": "The selected task does not belong to the selected project."
+                    "task": (
+                        "The selected task does not belong "
+                        "to the selected project."
+                    )
                 }
             )
 
         return attrs
+
+
+class CurrentTimerSerializer(serializers.ModelSerializer):
+    project = ProjectSummarySerializer(
+        read_only=True,
+    )
+
+    task = TaskSummarySerializer(
+        read_only=True,
+    )
+
+    elapsed_seconds = serializers.SerializerMethodField()
+
+    elapsed_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TimeEntry
+        fields = (
+            "id",
+            "project",
+            "task",
+            "description",
+            "start_time",
+            "status",
+            "elapsed_seconds",
+            "elapsed_time",
+        )
+
+    def get_elapsed_seconds(self, obj):
+        """
+        Returns the number of elapsed seconds since the timer started.
+        """
+
+        if not obj.start_time:
+            return 0
+
+        end_time = obj.end_time or timezone.now()
+
+        return int(
+            (end_time - obj.start_time).total_seconds()
+        )
+
+    def get_elapsed_time(self, obj):
+        """
+        Returns the elapsed time formatted as HH:MM:SS.
+        """
+
+        seconds = self.get_elapsed_seconds(obj)
+
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
+
+        return (
+            f"{hours:02}:{minutes:02}:{seconds:02}"
+        )

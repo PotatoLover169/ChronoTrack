@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    CurrentTimerView,
     StartTimerView,
     StopTimerView,
 )
@@ -15,5 +16,10 @@ urlpatterns = [
         "stop/",
         StopTimerView.as_view(),
         name="stop-timer",
+    ),
+    path(
+        "current/",
+        CurrentTimerView.as_view(),
+        name="current-timer",
     ),
 ]
