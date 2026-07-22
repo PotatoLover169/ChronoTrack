@@ -3,9 +3,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .exceptions import TimerAlreadyRunningError
+from .exceptions import (
+    NoRunningTimerError,
+    TimerAlreadyRunningError,
+)
 from .serializers import StartTimerSerializer
-from .services import start_timer
+from .services import (
+    start_timer,
+    stop_timer,
+)
 
 
 class StartTimerView(APIView):
@@ -40,4 +46,30 @@ class StartTimerView(APIView):
                 "time_entry_id": time_entry.id,
             },
             status=status.HTTP_201_CREATED,
+        )
+
+class StopTimerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            time_entry = stop_timer(
+                user=request.user,
+            )
+
+        except NoRunningTimerError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            {
+                "message": "Timer stopped successfully.",
+                "time_entry_id": time_entry.id,
+                "duration": str(time_entry.duration),
+            },
+            status=status.HTTP_200_OK,
         )

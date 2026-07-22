@@ -4,7 +4,21 @@ class TimerAlreadyRunningError(Exception):
     while another timer is already running.
     """
 
-    default_message = "You already have a running timer."
+    def __init__(
+        self,
+        message="You already have a running timer.",
+    ):
+        super().__init__(message)
 
-    def __init__(self, message=None):
-        super().__init__(message or self.default_message)
+
+class NoRunningTimerError(Exception):
+    """
+    Raised when a user attempts to stop a timer,
+    but no running timer exists.
+    """
+
+    def __init__(
+        self,
+        message="You don't have a running timer.",
+    ):
+        super().__init__(message)

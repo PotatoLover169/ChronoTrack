@@ -1,7 +1,10 @@
 from django.db import transaction
 from django.utils import timezone
 
-from .exceptions import TimerAlreadyRunningError
+from .exceptions import (
+    NoRunningTimerError,
+    TimerAlreadyRunningError,
+)
 from .models import TimeEntry, TimeEntryStatus
 
 
@@ -34,5 +37,26 @@ def start_timer(
             start_time=timezone.now(),
             status=TimeEntryStatus.RUNNING,
         )
+
+        return time_entry
+
+def stop_timer(*, user):
+    """
+    Stop the user's currently running timer.
+    """
+
+    with transaction.atomic():
+
+        time_entry = TimeEntry.objects.filter(
+            owner=user,
+            status=TimeEntryStatus.RUNNING,
+        ).first()
+
+        if not time_entry:
+            raise NoRunningTimerError()
+
+        time_entry.end_time = timezone.now()
+        time_entry.status = TimeEntryStatus.COMPLETED
+        time_entry.save()
 
         return time_entry
