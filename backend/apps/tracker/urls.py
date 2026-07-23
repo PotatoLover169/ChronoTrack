@@ -4,9 +4,21 @@ from .views import (
     CurrentTimerView,
     StartTimerView,
     StopTimerView,
+    TimeEntryDetailView,
+    TimeEntryListView,
 )
 
 urlpatterns = [
+    path(
+        "",
+        TimeEntryListView.as_view(),
+        name="time-entry-list",
+    ),
+    path(
+        "<int:pk>/",
+        TimeEntryDetailView.as_view(),
+        name="time-entry-detail",
+    ),
     path(
         "start/",
         StartTimerView.as_view(),

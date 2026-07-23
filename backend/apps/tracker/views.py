@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import generics
 from rest_framework.views import APIView
 
 from .exceptions import (
@@ -10,6 +11,7 @@ from .exceptions import (
 from .serializers import (
     CurrentTimerSerializer,
     StartTimerSerializer,
+    TimeEntrySerializer,
 )
 from .services import (
     get_current_timer,
@@ -100,4 +102,39 @@ class CurrentTimerView(APIView):
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,
+        )
+
+class TimeEntryListView(generics.ListAPIView):
+    """
+    Return all time entries for the authenticated user.
+    """
+
+    serializer_class = TimeEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            self.request.user.time_entries
+            .select_related(
+                "project",
+                "task",
+            )
+            .order_by("-start_time")
+        )
+
+class TimeEntryDetailView(generics.RetrieveAPIView):
+    """
+    Return a single time entry for the authenticated user.
+    """
+
+    serializer_class = TimeEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            self.request.user.time_entries
+            .select_related(
+                "project",
+                "task",
+            )
         )

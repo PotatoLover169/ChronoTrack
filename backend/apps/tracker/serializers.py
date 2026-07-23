@@ -99,3 +99,26 @@ class CurrentTimerSerializer(serializers.ModelSerializer):
         return (
             f"{hours:02}:{minutes:02}:{seconds:02}"
         )
+
+class TimeEntrySerializer(serializers.ModelSerializer):
+    project = ProjectSummarySerializer(
+        read_only=True,
+    )
+
+    task = TaskSummarySerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = TimeEntry
+        fields = (
+            "id",
+            "project",
+            "task",
+            "description",
+            "start_time",
+            "end_time",
+            "duration",
+            "billable",
+            "status",
+        )
