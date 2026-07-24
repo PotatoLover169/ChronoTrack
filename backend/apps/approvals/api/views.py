@@ -1,53 +1,129 @@
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.approvals.exceptions import (
-    PendingEditRequestExistsError,
+    EditRequestAlreadyReviewedError,
+)
+from apps.approvals.models import (
+    EditRequestStatus,
+    TimeEntryEditRequest,
 )
 from apps.approvals.services import (
-    create_edit_request,
+    approve_edit_request,
 )
 
-from .serializers import TimeEntryEditRequestSerializer
+from .serializers import (
+    ApproveTimeEntryEditRequestSerializer,
+    TimeEntryEditRequestDetailSerializer,
+)
 
 
-class CreateTimeEntryEditRequestView(APIView):
+class PendingTimeEntryEditRequestListView(generics.ListAPIView):
+    """
+    List all pending Time Entry Edit Requests.
+    """
+
+    serializer_class = (
+        TimeEntryEditRequestDetailSerializer
+    )
+
     permission_classes = (
         IsAuthenticated,
     )
 
-    def post(self, request):
-        serializer = TimeEntryEditRequestSerializer(
+    def get_queryset(self):
+        return (
+            TimeEntryEditRequest.objects.filter(
+                status=EditRequestStatus.PENDING,
+            )
+            .select_related(
+                "time_entry",
+                "requested_by",
+                "reviewed_by",
+                "requested_project",
+                "requested_task",
+            )
+            .order_by("-requested_at")
+        )
+
+
+class TimeEntryEditRequestDetailView(generics.RetrieveAPIView):
+    """
+    Retrieve a single Time Entry Edit Request.
+    """
+
+    serializer_class = (
+        TimeEntryEditRequestDetailSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get_queryset(self):
+        return (
+            TimeEntryEditRequest.objects
+            .select_related(
+                "time_entry",
+                "requested_by",
+                "reviewed_by",
+                "requested_project",
+                "requested_task",
+            )
+        )
+
+
+class ApproveTimeEntryEditRequestView(generics.GenericAPIView):
+    """
+    Approve a Time Entry Edit Request.
+    """
+
+    serializer_class = (
+        ApproveTimeEntryEditRequestSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def patch(self, request, pk):
+        serializer = self.get_serializer(
             data=request.data,
-            context={"request": request},
         )
 
         serializer.is_valid(
             raise_exception=True,
         )
 
+        edit_request = generics.get_object_or_404(
+            TimeEntryEditRequest,
+            pk=pk,
+        )
+
         try:
-            edit_request = create_edit_request(
-                user=request.user,
-                **serializer.validated_data,
+            approve_edit_request(
+                edit_request=edit_request,
+                manager=request.user,
+                manager_comment=serializer.validated_data.get(
+                    "manager_comment",
+                    "",
+                ),
             )
 
-        except PendingEditRequestExistsError as exc:
+        except EditRequestAlreadyReviewedError as exc:
             return Response(
                 {
                     "detail": str(exc),
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_409_CONFLICT,
             )
 
         return Response(
             {
                 "message": (
-                    "Time entry edit request submitted successfully."
+                    "Time entry edit request approved successfully."
                 ),
-                "edit_request_id": edit_request.id,
             },
-            status=status.HTTP_201_CREATED,
+            status=status.HTTP_200_OK,
         )

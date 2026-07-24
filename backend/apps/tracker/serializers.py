@@ -122,3 +122,15 @@ class TimeEntrySerializer(serializers.ModelSerializer):
             "billable",
             "status",
         )
+
+class TimeEntrySummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeEntry
+
+        fields = (
+            "id",
+            "status",
+            "start_time",
+            "end_time",
+            "duration",
+        )

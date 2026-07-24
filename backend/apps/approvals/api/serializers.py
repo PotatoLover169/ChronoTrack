@@ -66,3 +66,35 @@ class TimeEntryEditRequestSerializer(serializers.ModelSerializer):
                     owner=request.user,
                 )
             )
+
+
+class TimeEntryEditRequestDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeEntryEditRequest
+
+        fields = (
+            "id",
+            "time_entry",
+            "requested_by",
+            "reviewed_by",
+            "requested_project",
+            "requested_task",
+            "requested_start_time",
+            "requested_end_time",
+            "requested_description",
+            "requested_billable",
+            "reason",
+            "proof_screenshot",
+            "status",
+            "manager_comment",
+            "requested_at",
+            "reviewed_at",
+        )
+
+        read_only_fields = fields
+
+class ApproveTimeEntryEditRequestSerializer(serializers.Serializer):
+    manager_comment = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
