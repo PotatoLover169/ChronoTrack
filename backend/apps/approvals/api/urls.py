@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     ApproveTimeEntryEditRequestView,
     PendingTimeEntryEditRequestListView,
+    RejectTimeEntryEditRequestView,
     TimeEntryEditRequestDetailView,
 )
 
@@ -23,5 +24,11 @@ urlpatterns = [
         "time-entry-edit-requests/<int:pk>/approve/",
         ApproveTimeEntryEditRequestView.as_view(),
         name="approve-time-entry-edit-request",
+    ),
+
+    path(
+        "time-entry-edit-requests/<int:pk>/reject/",
+        RejectTimeEntryEditRequestView.as_view(),
+        name="reject-time-entry-edit-request",
     ),
 ]

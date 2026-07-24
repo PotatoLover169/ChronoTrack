@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -5,16 +7,19 @@ from rest_framework.response import Response
 from apps.approvals.exceptions import (
     EditRequestAlreadyReviewedError,
 )
+
 from apps.approvals.models import (
     EditRequestStatus,
     TimeEntryEditRequest,
 )
+
 from apps.approvals.services import (
     approve_edit_request,
+    reject_edit_request,
 )
 
 from .serializers import (
-    ApproveTimeEntryEditRequestSerializer,
+    ManagerCommentSerializer,
     TimeEntryEditRequestDetailSerializer,
 )
 
@@ -24,9 +29,7 @@ class PendingTimeEntryEditRequestListView(generics.ListAPIView):
     List all pending Time Entry Edit Requests.
     """
 
-    serializer_class = (
-        TimeEntryEditRequestDetailSerializer
-    )
+    serializer_class = TimeEntryEditRequestDetailSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -53,9 +56,7 @@ class TimeEntryEditRequestDetailView(generics.RetrieveAPIView):
     Retrieve a single Time Entry Edit Request.
     """
 
-    serializer_class = (
-        TimeEntryEditRequestDetailSerializer
-    )
+    serializer_class = TimeEntryEditRequestDetailSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -63,8 +64,7 @@ class TimeEntryEditRequestDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return (
-            TimeEntryEditRequest.objects
-            .select_related(
+            TimeEntryEditRequest.objects.select_related(
                 "time_entry",
                 "requested_by",
                 "reviewed_by",
@@ -79,24 +79,17 @@ class ApproveTimeEntryEditRequestView(generics.GenericAPIView):
     Approve a Time Entry Edit Request.
     """
 
-    serializer_class = (
-        ApproveTimeEntryEditRequestSerializer
-    )
+    serializer_class = ManagerCommentSerializer
 
     permission_classes = (
         IsAuthenticated,
     )
 
     def patch(self, request, pk):
-        serializer = self.get_serializer(
-            data=request.data,
-        )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        serializer.is_valid(
-            raise_exception=True,
-        )
-
-        edit_request = generics.get_object_or_404(
+        edit_request = get_object_or_404(
             TimeEntryEditRequest,
             pk=pk,
         )
@@ -105,17 +98,14 @@ class ApproveTimeEntryEditRequestView(generics.GenericAPIView):
             approve_edit_request(
                 edit_request=edit_request,
                 manager=request.user,
-                manager_comment=serializer.validated_data.get(
-                    "manager_comment",
-                    "",
-                ),
+                manager_comment=serializer.validated_data[
+                    "manager_comment"
+                ],
             )
 
         except EditRequestAlreadyReviewedError as exc:
             return Response(
-                {
-                    "detail": str(exc),
-                },
+                {"detail": str(exc)},
                 status=status.HTTP_409_CONFLICT,
             )
 
@@ -123,6 +113,51 @@ class ApproveTimeEntryEditRequestView(generics.GenericAPIView):
             {
                 "message": (
                     "Time entry edit request approved successfully."
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class RejectTimeEntryEditRequestView(generics.GenericAPIView):
+    """
+    Reject a pending Time Entry Edit Request.
+    """
+
+    serializer_class = ManagerCommentSerializer
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def patch(self, request, pk):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        edit_request = get_object_or_404(
+            TimeEntryEditRequest,
+            pk=pk,
+        )
+
+        try:
+            reject_edit_request(
+                manager=request.user,
+                edit_request=edit_request,
+                manager_comment=serializer.validated_data[
+                    "manager_comment"
+                ],
+            )
+
+        except EditRequestAlreadyReviewedError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            {
+                "message": (
+                    "Time entry edit request rejected successfully."
                 ),
             },
             status=status.HTTP_200_OK,

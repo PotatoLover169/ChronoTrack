@@ -93,8 +93,15 @@ class TimeEntryEditRequestDetailSerializer(serializers.ModelSerializer):
 
         read_only_fields = fields
 
-class ApproveTimeEntryEditRequestSerializer(serializers.Serializer):
+
+class ManagerCommentSerializer(serializers.Serializer):
+    """
+    Serializer used by managers when approving or rejecting
+    a Time Entry Edit Request.
+    """
+
     manager_comment = serializers.CharField(
-        required=False,
-        allow_blank=True,
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
     )

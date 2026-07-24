@@ -99,3 +99,43 @@ def approve_edit_request(
     edit_request.save()
 
     return edit_request
+
+from django.utils import timezone
+
+
+@transaction.atomic
+def reject_edit_request(
+    *,
+    manager,
+    edit_request,
+    manager_comment,
+):
+    """
+    Reject a pending edit request.
+    """
+
+    if edit_request.status != EditRequestStatus.PENDING:
+        raise ValueError(
+            "Only pending edit requests can be rejected."
+        )
+
+    if not manager_comment.strip():
+        raise ValueError(
+            "Manager comment is required."
+        )
+
+    edit_request.status = EditRequestStatus.REJECTED
+    edit_request.reviewed_by = manager
+    edit_request.reviewed_at = timezone.now()
+    edit_request.manager_comment = manager_comment
+
+    edit_request.save(
+        update_fields=[
+            "status",
+            "reviewed_by",
+            "reviewed_at",
+            "manager_comment",
+        ]
+    )
+
+    return edit_request
