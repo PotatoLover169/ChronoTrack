@@ -21,4 +21,7 @@ urlpatterns = [
 
     # Reports API
     path("reports/", include("apps.reports.api.urls")),
+
+    # Dashboard API
+    path("dashboard/", include("apps.dashboard.api.urls")),
 ]
