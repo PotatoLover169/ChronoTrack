@@ -18,4 +18,7 @@ urlpatterns = [
 
     # Tracker API
     path("tracker/", include("apps.tracker.urls")),
+
+    # Reports API
+    path("reports/", include("apps.reports.api.urls")),
 ]

@@ -1,7 +1,8 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 from apps.projects.models import Project
 from apps.tasks.models import Task
@@ -106,6 +107,25 @@ class TimeEntry(models.Model):
         self.full_clean()
 
         super().save(*args, **kwargs)
+
+    @property
+    def earnings(self):
+        """
+        Calculates the billable earnings for this time entry.
+        """
+
+        if not self.billable or not self.duration:
+            return Decimal("0.00")
+
+        hours = Decimal(
+            str(self.duration.total_seconds() / 3600)
+        )
+
+        return (
+            hours * self.hourly_rate
+        ).quantize(
+            Decimal("0.01")
+        )
 
     def __str__(self):
         return f"{self.project.name} - {self.owner.username}"
