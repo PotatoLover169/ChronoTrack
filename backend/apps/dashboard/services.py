@@ -147,6 +147,51 @@ def get_recent_entries(
         .order_by("-start_time")[:limit]
     )
 
+from collections import defaultdict
+
+
+def get_top_projects(
+    user,
+    limit=5,
+):
+    """
+    Return the projects with the highest tracked hours.
+    """
+
+    project_data = defaultdict(
+        lambda: {
+            "project": None,
+            "hours": 0,
+            "earnings": Decimal("0.00"),
+        }
+    )
+
+    entries = get_completed_entries(user).select_related(
+        "project",
+    )
+
+    for entry in entries:
+        project = entry.project
+
+        item = project_data[project.id]
+
+        item["project"] = project
+
+        if entry.duration:
+            item["hours"] += (
+                entry.duration.total_seconds() / 3600
+            )
+
+        item["earnings"] += entry.earnings
+
+    projects = sorted(
+        project_data.values(),
+        key=lambda x: x["hours"],
+        reverse=True,
+    )
+
+    return projects[:limit]
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.
@@ -166,4 +211,6 @@ def get_dashboard_data(user):
                 "pending_approvals": get_pending_approvals(),
         },
         "recent_entries": get_recent_entries(user),
-}
+        
+        "top_projects": get_top_projects(user),
+    }

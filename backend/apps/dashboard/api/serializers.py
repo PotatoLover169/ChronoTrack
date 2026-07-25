@@ -1,7 +1,11 @@
 from rest_framework import serializers
 
-from apps.projects.api.serializers import ProjectSummarySerializer
-from apps.tasks.api.serializers import TaskSummarySerializer
+from apps.projects.api.serializers import (
+    ProjectSummarySerializer,
+)
+from apps.tasks.api.serializers import (
+    TaskSummarySerializer,
+)
 
 from apps.tracker.models import TimeEntry
 
@@ -56,9 +60,26 @@ class DashboardRecentEntrySerializer(serializers.ModelSerializer):
         )
 
 
+class DashboardTopProjectSerializer(
+    serializers.Serializer,
+):
+    project = ProjectSummarySerializer()
+
+    hours = serializers.FloatField()
+
+    earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+
 class DashboardSerializer(serializers.Serializer):
     summary = DashboardSummarySerializer()
 
     recent_entries = DashboardRecentEntrySerializer(
+        many=True,
+    )
+
+    top_projects = DashboardTopProjectSerializer(
         many=True,
     )

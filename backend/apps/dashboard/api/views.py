@@ -45,6 +45,7 @@ class DashboardAPIView(generics.GenericAPIView):
             {
                 "summary": dashboard["summary"],
                 "recent_entries": dashboard["recent_entries"],
+                "top_projects": dashboard["top_projects"],
             }
         )
 
