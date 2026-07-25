@@ -30,19 +30,22 @@ class DashboardAPIView(generics.GenericAPIView):
     Return dashboard statistics for the authenticated user.
     """
 
-    serializer_class = DashboardSerializer
-
     permission_classes = (
         IsAuthenticated,
     )
 
+    serializer_class = DashboardSerializer
+
     def get(self, request):
-        data = get_dashboard_data(
+        dashboard = get_dashboard_data(
             request.user,
         )
 
         serializer = self.get_serializer(
-            data,
+            {
+                "summary": dashboard["summary"],
+                "recent_entries": dashboard["recent_entries"],
+            }
         )
 
         return Response(

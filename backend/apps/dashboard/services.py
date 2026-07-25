@@ -130,6 +130,22 @@ def get_pending_approvals():
         status=EditRequestStatus.PENDING,
     ).count()
 
+def get_recent_entries(
+    user,
+    limit=5,
+):
+    """
+    Return the most recent completed time entries.
+    """
+
+    return (
+        get_completed_entries(user)
+        .select_related(
+            "project",
+            "task",
+        )
+        .order_by("-start_time")[:limit]
+    )
 
 def get_dashboard_data(user):
     """
@@ -137,14 +153,17 @@ def get_dashboard_data(user):
     """
 
     return {
-        "running_timer": get_running_timer(user),
-        "today_hours": get_today_hours(user),
-        "this_week_hours": get_this_week_hours(user),
-        "this_month_hours": get_this_month_hours(user),
-        "active_projects": get_active_projects(user),
-        "completed_projects": get_completed_projects(user),
-        "total_clients": get_total_clients(user),
-        "billable_hours": get_billable_hours(user),
-        "estimated_earnings": get_estimated_earnings(user),
-        "pending_approvals": get_pending_approvals(),
-    }
+            "summary": {
+                "running_timer": get_running_timer(user),
+                "today_hours": get_today_hours(user),
+                "this_week_hours": get_this_week_hours(user),
+                "this_month_hours": get_this_month_hours(user),
+                "active_projects": get_active_projects(user),
+                "completed_projects": get_completed_projects(user),
+                "total_clients": get_total_clients(user),
+                "billable_hours": get_billable_hours(user),
+                "estimated_earnings": get_estimated_earnings(user),
+                "pending_approvals": get_pending_approvals(),
+        },
+        "recent_entries": get_recent_entries(user),
+}
