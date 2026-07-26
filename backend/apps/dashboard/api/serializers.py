@@ -79,6 +79,13 @@ class DashboardHoursPerDaySerializer(
 
     hours = serializers.FloatField()
 
+class DashboardBillableBreakdownSerializer(
+    serializers.Serializer,
+):
+    billable_hours = serializers.FloatField()
+
+    non_billable_hours = serializers.FloatField()
+
 class DashboardSerializer(serializers.Serializer):
     summary = DashboardSummarySerializer()
 
@@ -92,4 +99,8 @@ class DashboardSerializer(serializers.Serializer):
 
     hours_per_day = DashboardHoursPerDaySerializer(
         many=True,
+    )
+
+    billable_breakdown = (
+        DashboardBillableBreakdownSerializer()
     )

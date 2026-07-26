@@ -236,6 +236,40 @@ def get_hours_per_day(
 
     return results
 
+def get_billable_breakdown(
+    user,
+):
+    """
+    Return billable and non-billable tracked hours.
+    """
+
+    billable_seconds = 0
+    non_billable_seconds = 0
+
+    entries = get_completed_entries(user)
+
+    for entry in entries:
+        if not entry.duration:
+            continue
+
+        seconds = entry.duration.total_seconds()
+
+        if entry.billable:
+            billable_seconds += seconds
+        else:
+            non_billable_seconds += seconds
+
+    return {
+        "billable_hours": round(
+            billable_seconds / 3600,
+            2,
+        ),
+        "non_billable_hours": round(
+            non_billable_seconds / 3600,
+            2,
+        ),
+    }
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.
@@ -259,4 +293,6 @@ def get_dashboard_data(user):
         "top_projects": get_top_projects(user),
 
         "hours_per_day": get_hours_per_day(user),
+
+        "billable_breakdown": get_billable_breakdown(user),
     }
