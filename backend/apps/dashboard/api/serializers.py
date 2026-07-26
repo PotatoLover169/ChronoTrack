@@ -72,6 +72,12 @@ class DashboardTopProjectSerializer(
         decimal_places=2,
     )
 
+class DashboardHoursPerDaySerializer(
+    serializers.Serializer,
+):
+    date = serializers.DateField()
+
+    hours = serializers.FloatField()
 
 class DashboardSerializer(serializers.Serializer):
     summary = DashboardSummarySerializer()
@@ -81,5 +87,9 @@ class DashboardSerializer(serializers.Serializer):
     )
 
     top_projects = DashboardTopProjectSerializer(
+        many=True,
+    )
+
+    hours_per_day = DashboardHoursPerDaySerializer(
         many=True,
     )

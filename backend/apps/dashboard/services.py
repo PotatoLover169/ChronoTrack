@@ -192,6 +192,50 @@ def get_top_projects(
 
     return projects[:limit]
 
+def get_hours_per_day(
+    user,
+    days=7,
+):
+    """
+    Return tracked hours for each of the last N days.
+    """
+
+    today = timezone.localdate()
+
+    results = []
+
+    for i in range(days - 1, -1, -1):
+        current_day = today - timezone.timedelta(
+            days=i,
+        )
+
+        total_seconds = 0
+
+        entries = (
+            get_completed_entries(user)
+            .filter(
+                start_time__date=current_day,
+            )
+        )
+
+        for entry in entries:
+            if entry.duration:
+                total_seconds += (
+                    entry.duration.total_seconds()
+                )
+
+        results.append(
+            {
+                "date": current_day.isoformat(),
+                "hours": round(
+                    total_seconds / 3600,
+                    2,
+                ),
+            }
+        )
+
+    return results
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.
@@ -213,4 +257,6 @@ def get_dashboard_data(user):
         "recent_entries": get_recent_entries(user),
         
         "top_projects": get_top_projects(user),
+
+        "hours_per_day": get_hours_per_day(user),
     }
