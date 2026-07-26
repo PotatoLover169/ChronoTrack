@@ -147,8 +147,10 @@ def get_recent_entries(
         .order_by("-start_time")[:limit]
     )
 
-from collections import defaultdict
-
+from collections import (
+    Counter,
+    defaultdict,
+)
 
 def get_top_projects(
     user,
@@ -270,29 +272,70 @@ def get_billable_breakdown(
         ),
     }
 
+def get_project_status_breakdown(
+    user,
+):
+    """
+    Return the number of projects grouped by status.
+    """
+
+    statuses = (
+        Project.objects.filter(
+            owner=user,
+        ).values_list(
+            "status",
+            flat=True,
+        )
+    )
+
+    counter = Counter(statuses)
+
+    return {
+        "planning": counter.get(
+            "planning",
+            0,
+        ),
+        "in_progress": counter.get(
+            "in_progress",
+            0,
+        ),
+        "on_hold": counter.get(
+            "on_hold",
+            0,
+        ),
+        "completed": counter.get(
+            "completed",
+            0,
+        ),
+        "cancelled": counter.get(
+            "cancelled",
+            0,
+        ),
+    }
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.
     """
 
     return {
-            "summary": {
-                "running_timer": get_running_timer(user),
-                "today_hours": get_today_hours(user),
-                "this_week_hours": get_this_week_hours(user),
-                "this_month_hours": get_this_month_hours(user),
-                "active_projects": get_active_projects(user),
-                "completed_projects": get_completed_projects(user),
-                "total_clients": get_total_clients(user),
-                "billable_hours": get_billable_hours(user),
-                "estimated_earnings": get_estimated_earnings(user),
-                "pending_approvals": get_pending_approvals(),
+        "summary": {
+            "running_timer": get_running_timer(user),
+            "today_hours": get_today_hours(user),
+            "this_week_hours": get_this_week_hours(user),
+            "this_month_hours": get_this_month_hours(user),
+            "active_projects": get_active_projects(user),
+            "completed_projects": get_completed_projects(user),
+            "total_clients": get_total_clients(user),
+            "billable_hours": get_billable_hours(user),
+            "estimated_earnings": get_estimated_earnings(user),
+            "pending_approvals": get_pending_approvals(),
         },
         "recent_entries": get_recent_entries(user),
-        
         "top_projects": get_top_projects(user),
-
         "hours_per_day": get_hours_per_day(user),
-
         "billable_breakdown": get_billable_breakdown(user),
+        "project_status_breakdown": get_project_status_breakdown(
+            user,
+        ),
     }

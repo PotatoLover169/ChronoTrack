@@ -41,8 +41,6 @@ class DashboardAPIView(generics.GenericAPIView):
             request.user,
         )
 
-        print(dashboard)
-
         serializer = self.get_serializer(
             {
                 "summary": dashboard["summary"],
@@ -50,6 +48,9 @@ class DashboardAPIView(generics.GenericAPIView):
                 "top_projects": dashboard["top_projects"],
                 "hours_per_day": dashboard["hours_per_day"],
                 "billable_breakdown": dashboard["billable_breakdown"],
+                "project_status_breakdown": dashboard[
+                    "project_status_breakdown"
+                ],
             }
 )
 

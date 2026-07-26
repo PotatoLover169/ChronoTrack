@@ -86,6 +86,19 @@ class DashboardBillableBreakdownSerializer(
 
     non_billable_hours = serializers.FloatField()
 
+class DashboardProjectStatusBreakdownSerializer(
+    serializers.Serializer,
+):
+    planning = serializers.IntegerField()
+
+    in_progress = serializers.IntegerField()
+
+    on_hold = serializers.IntegerField()
+
+    completed = serializers.IntegerField()
+
+    cancelled = serializers.IntegerField()
+
 class DashboardSerializer(serializers.Serializer):
     summary = DashboardSummarySerializer()
 
@@ -103,4 +116,8 @@ class DashboardSerializer(serializers.Serializer):
 
     billable_breakdown = (
         DashboardBillableBreakdownSerializer()
+    )
+
+    project_status_breakdown = (
+        DashboardProjectStatusBreakdownSerializer()
     )
