@@ -70,3 +70,20 @@ def get_report_summary(user):
         ),
         "estimated_earnings": estimated_earnings,
     }
+
+
+def get_timesheet_report(user):
+    """
+    Return all completed time entries.
+    """
+
+    return (
+        get_completed_entries(user)
+        .select_related(
+            "project",
+            "task",
+        )
+        .order_by(
+            "-start_time",
+        )
+    )
