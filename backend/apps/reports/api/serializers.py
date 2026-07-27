@@ -50,7 +50,7 @@ class TimesheetReportSerializer(serializers.ModelSerializer):
 
     def get_task(self, obj):
         if obj.task:
-            return obj.task.name
+            return obj.task.title
         return None
 
     def get_date(self, obj):

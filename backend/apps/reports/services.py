@@ -6,34 +6,46 @@ from apps.tracker.models import (
 )
 
 
-def get_report_summary(user):
+def get_completed_entries(user):
     """
-    Generate a summary report for the authenticated user.
+    Return all completed time entries for the user.
     """
 
-    completed_entries = TimeEntry.objects.filter(
+    return TimeEntry.objects.filter(
         owner=user,
         status=TimeEntryStatus.COMPLETED,
     )
 
-    total_entries = completed_entries.count()
 
-    billable_entries = completed_entries.filter(
+def get_report_summary(user):
+    """
+    Return summary statistics for reports.
+    """
+
+    entries = get_completed_entries(user)
+
+    total_entries = entries.count()
+
+    completed_entries = total_entries
+
+    billable_entries = entries.filter(
         billable=True,
     ).count()
 
-    non_billable_entries = completed_entries.filter(
+    non_billable_entries = entries.filter(
         billable=False,
     ).count()
 
     total_seconds = 0
+
     billable_seconds = 0
 
     estimated_earnings = Decimal("0.00")
 
-    for entry in completed_entries:
+    for entry in entries:
 
         if entry.duration:
+
             seconds = entry.duration.total_seconds()
 
             total_seconds += seconds
@@ -43,22 +55,18 @@ def get_report_summary(user):
 
         estimated_earnings += entry.earnings
 
-    total_hours = round(
-        total_seconds / 3600,
-        2,
-    )
-
-    billable_hours = round(
-        billable_seconds / 3600,
-        2,
-    )
-
     return {
         "total_entries": total_entries,
-        "completed_entries": total_entries,
+        "completed_entries": completed_entries,
         "billable_entries": billable_entries,
         "non_billable_entries": non_billable_entries,
-        "total_duration_hours": total_hours,
-        "billable_hours": billable_hours,
+        "total_duration_hours": round(
+            total_seconds / 3600,
+            2,
+        ),
+        "billable_hours": round(
+            billable_seconds / 3600,
+            2,
+        ),
         "estimated_earnings": estimated_earnings,
     }
