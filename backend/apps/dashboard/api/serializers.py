@@ -99,6 +99,28 @@ class DashboardProjectStatusBreakdownSerializer(
 
     cancelled = serializers.IntegerField()
 
+class DashboardChartItemSerializer(
+    serializers.Serializer,
+):
+    label = serializers.CharField()
+
+    value = serializers.FloatField()
+
+class DashboardChartsSerializer(
+    serializers.Serializer,
+):
+    hours_per_day = DashboardChartItemSerializer(
+        many=True,
+    )
+
+    billable = DashboardChartItemSerializer(
+        many=True,
+    )
+
+    project_status = DashboardChartItemSerializer(
+        many=True,
+    )
+
 class DashboardSerializer(serializers.Serializer):
     summary = DashboardSummarySerializer()
 
@@ -121,3 +143,5 @@ class DashboardSerializer(serializers.Serializer):
     project_status_breakdown = (
         DashboardProjectStatusBreakdownSerializer()
     )
+
+    charts = DashboardChartsSerializer()

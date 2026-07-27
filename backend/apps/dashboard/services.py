@@ -313,6 +313,59 @@ def get_project_status_breakdown(
         ),
     }
 
+def get_chart_data(user):
+    """
+    Return chart-ready dashboard data.
+    """
+
+    hours = get_hours_per_day(user)
+    billable = get_billable_breakdown(user)
+    project_status = get_project_status_breakdown(user)
+
+    return {
+        "hours_per_day": [
+            {
+                "label": item["date"],
+                "value": item["hours"],
+            }
+            for item in hours
+        ],
+
+        "billable": [
+            {
+                "label": "Billable",
+                "value": billable["billable_hours"],
+            },
+            {
+                "label": "Non-Billable",
+                "value": billable["non_billable_hours"],
+            },
+        ],
+
+        "project_status": [
+            {
+                "label": "Planning",
+                "value": project_status["planning"],
+            },
+            {
+                "label": "In Progress",
+                "value": project_status["in_progress"],
+            },
+            {
+                "label": "On Hold",
+                "value": project_status["on_hold"],
+            },
+            {
+                "label": "Completed",
+                "value": project_status["completed"],
+            },
+            {
+                "label": "Cancelled",
+                "value": project_status["cancelled"],
+            },
+        ],
+    }
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.
@@ -331,11 +384,16 @@ def get_dashboard_data(user):
             "estimated_earnings": get_estimated_earnings(user),
             "pending_approvals": get_pending_approvals(),
         },
+
         "recent_entries": get_recent_entries(user),
+
         "top_projects": get_top_projects(user),
+
         "hours_per_day": get_hours_per_day(user),
+
         "billable_breakdown": get_billable_breakdown(user),
-        "project_status_breakdown": get_project_status_breakdown(
-            user,
-        ),
+
+        "project_status_breakdown": get_project_status_breakdown(user),
+
+        "charts": get_chart_data(user),
     }
