@@ -60,8 +60,38 @@ class TimesheetReportView(
     )
 
     def get(self, request):
+        start_date = request.query_params.get(
+            "start_date",
+        )
+
+        end_date = request.query_params.get(
+            "end_date",
+        )
+
+        project_id = request.query_params.get(
+            "project",
+        )
+
+        client_id = request.query_params.get(
+            "client",
+        )
+
+        billable = request.query_params.get(
+            "billable",
+        )
+
+        if billable is not None:
+            billable = (
+                billable.lower() == "true"
+            )
+
         entries = get_timesheet_report(
-            request.user,
+            user=request.user,
+            start_date=start_date,
+            end_date=end_date,
+            project_id=project_id,
+            client_id=client_id,
+            billable=billable,
         )
 
         serializer = self.get_serializer(

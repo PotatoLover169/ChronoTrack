@@ -72,18 +72,52 @@ def get_report_summary(user):
     }
 
 
-def get_timesheet_report(user):
+def get_timesheet_report(
+    user,
+    start_date=None,
+    end_date=None,
+    project_id=None,
+    client_id=None,
+    billable=None,
+):
     """
-    Return all completed time entries.
+    Return completed time entries with optional filters.
     """
 
-    return (
+    entries = (
         get_completed_entries(user)
         .select_related(
             "project",
+            "project__client",
             "task",
         )
-        .order_by(
-            "-start_time",
+    )
+
+    if start_date:
+        entries = entries.filter(
+            start_time__date__gte=start_date,
         )
+
+    if end_date:
+        entries = entries.filter(
+            start_time__date__lte=end_date,
+        )
+
+    if project_id:
+        entries = entries.filter(
+            project_id=project_id,
+        )
+
+    if client_id:
+        entries = entries.filter(
+            project__client_id=client_id,
+        )
+
+    if billable is not None:
+        entries = entries.filter(
+            billable=billable,
+        )
+
+    return entries.order_by(
+        "-start_time",
     )
