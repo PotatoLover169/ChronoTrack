@@ -79,6 +79,7 @@ def get_timesheet_report(
     project_id=None,
     client_id=None,
     billable=None,
+    ordering="-start_time"
 ):
     """
     Return completed time entries with optional filters.
@@ -118,6 +119,16 @@ def get_timesheet_report(
             billable=billable,
         )
 
+    allowed_ordering = {
+    "start_time",
+    "-start_time",
+    "hourly_rate",
+    "-hourly_rate",
+    }
+
+    if ordering not in allowed_ordering:
+        ordering = "-start_time"
+
     return entries.order_by(
-        "-start_time",
+        ordering,
     )
