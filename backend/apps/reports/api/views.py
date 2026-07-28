@@ -1,6 +1,10 @@
 import csv
 
 from django.http import HttpResponse
+
+from openpyxl import Workbook
+from openpyxl.styles import Font
+
 from rest_framework import generics
 from rest_framework.permissions import (
     IsAuthenticated,
@@ -198,5 +202,115 @@ class TimesheetCSVExportView(
                 f"{entry.hourly_rate:.2f}",
                 f"{entry.earnings:.2f}",
             ])
+
+        return response
+
+class TimesheetExcelExportView(
+    generics.GenericAPIView,
+):
+    """
+    Export completed time entries as Excel.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(self, request):
+
+        start_date = request.GET.get(
+            "start_date",
+        )
+
+        end_date = request.GET.get(
+            "end_date",
+        )
+
+        project_id = request.GET.get(
+            "project",
+        )
+
+        client_id = request.GET.get(
+            "client",
+        )
+
+        billable = request.GET.get(
+            "billable",
+        )
+
+        ordering = request.GET.get(
+            "ordering",
+            "-start_time",
+        )
+
+        if billable is not None:
+            billable = (
+                billable.lower() == "true"
+            )
+
+        entries = get_timesheet_report(
+            user=request.user,
+            start_date=start_date,
+            end_date=end_date,
+            project_id=project_id,
+            client_id=client_id,
+            billable=billable,
+            ordering=ordering,
+        )
+
+        workbook = Workbook()
+
+        worksheet = workbook.active
+
+        worksheet.title = "Timesheet Report"
+
+        headers = [
+            "Project",
+            "Task",
+            "Date",
+            "Start Time",
+            "End Time",
+            "Duration",
+            "Billable",
+            "Hourly Rate",
+            "Earnings",
+        ]
+
+        worksheet.append(headers)
+
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+
+        for entry in entries:
+
+            worksheet.append([
+                entry.project.name,
+                entry.task.title if entry.task else "",
+                entry.start_time.strftime("%Y-%m-%d"),
+                entry.start_time.strftime("%H:%M"),
+                entry.end_time.strftime("%H:%M")
+                if entry.end_time else "",
+                str(entry.duration)[:-3]
+                if entry.duration else "",
+                "Yes" if entry.billable else "No",
+                float(entry.hourly_rate),
+                float(entry.earnings),
+            ])
+
+        response = HttpResponse(
+            content_type=(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        )
+
+        response[
+            "Content-Disposition"
+        ] = (
+            'attachment; filename="timesheet_report.xlsx"'
+        )
+
+        workbook.save(
+            response,
+        )
 
         return response

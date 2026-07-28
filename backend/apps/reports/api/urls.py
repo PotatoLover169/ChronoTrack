@@ -4,7 +4,7 @@ from .views import (
     ReportSummaryView,
     TimesheetReportView,
     TimesheetCSVExportView,
-
+    TimesheetExcelExportView,
 )
 
 urlpatterns = [
@@ -22,5 +22,10 @@ urlpatterns = [
         "timesheet/export/csv/",
         TimesheetCSVExportView.as_view(),
         name="timesheet-csv-export",
+    ),
+    path(
+    "timesheet/export/excel/",
+    TimesheetExcelExportView.as_view(),
+    name="timesheet-excel-export",
     ),
 ]
