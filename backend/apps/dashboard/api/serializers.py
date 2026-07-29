@@ -42,6 +42,38 @@ class DashboardTodaySerializer(
 
     completed_tasks = serializers.IntegerField()
 
+class DashboardWeekSerializer(
+    serializers.Serializer,
+):
+    hours = serializers.FloatField()
+
+    billable_hours = serializers.FloatField()
+
+    earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    entries = serializers.IntegerField()
+
+    completed_tasks = serializers.IntegerField()
+
+class DashboardMonthSerializer(
+    serializers.Serializer,
+):
+    hours = serializers.FloatField()
+
+    billable_hours = serializers.FloatField()
+
+    earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    entries = serializers.IntegerField()
+
+    completed_tasks = serializers.IntegerField()
+
 class DashboardSummarySerializer(serializers.Serializer):
     running_timer = serializers.BooleanField()
 
@@ -50,6 +82,10 @@ class DashboardSummarySerializer(serializers.Serializer):
     )
 
     today = DashboardTodaySerializer()
+
+    week = DashboardWeekSerializer()
+
+    month = DashboardMonthSerializer()
 
     today_hours = serializers.FloatField()
 

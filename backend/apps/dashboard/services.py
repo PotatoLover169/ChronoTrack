@@ -107,6 +107,119 @@ def get_today_summary(user):
         ).count(),
     }
 
+def get_week_summary(user):
+    """
+    Return this week's productivity summary.
+    """
+
+    today = timezone.localdate()
+
+    week_start = today - timezone.timedelta(
+        days=today.weekday(),
+    )
+
+    entries = (
+        get_completed_entries(user)
+        .filter(
+            start_time__date__gte=week_start,
+        )
+    )
+
+    total_seconds = 0
+
+    billable_seconds = 0
+
+    earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if entry.duration:
+
+            seconds = (
+                entry.duration.total_seconds()
+            )
+
+            total_seconds += seconds
+
+            if entry.billable:
+                billable_seconds += seconds
+
+        earnings += entry.earnings
+
+    return {
+        "hours": round(
+            total_seconds / 3600,
+            2,
+        ),
+
+        "billable_hours": round(
+            billable_seconds / 3600,
+            2,
+        ),
+
+        "earnings": earnings,
+
+        "entries": entries.count(),
+
+        "completed_tasks": entries.exclude(
+            task=None,
+        ).count(),
+    }
+
+def get_month_summary(user):
+    """
+    Return this month's productivity summary.
+    """
+
+    today = timezone.localdate()
+
+    entries = (
+        get_completed_entries(user)
+        .filter(
+            start_time__year=today.year,
+            start_time__month=today.month,
+        )
+    )
+
+    total_seconds = 0
+
+    billable_seconds = 0
+
+    earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if entry.duration:
+
+            seconds = entry.duration.total_seconds()
+
+            total_seconds += seconds
+
+            if entry.billable:
+                billable_seconds += seconds
+
+        earnings += entry.earnings
+
+    return {
+        "hours": round(
+            total_seconds / 3600,
+            2,
+        ),
+
+        "billable_hours": round(
+            billable_seconds / 3600,
+            2,
+        ),
+
+        "earnings": earnings,
+
+        "entries": entries.count(),
+
+        "completed_tasks": entries.exclude(
+            task=None,
+        ).count(),
+    }
+
 def get_today_hours(user):
     today = timezone.localdate()
 
@@ -452,6 +565,8 @@ def get_dashboard_data(user):
             "running_timer": get_running_timer(user),
             "current_timer": get_current_timer(user),
             "today": get_today_summary(user),
+            "week": get_week_summary(user),
+            "month": get_month_summary(user),
             "today_hours": get_today_hours(user),
             "this_week_hours": get_this_week_hours(user),
             "this_month_hours": get_this_month_hours(user),
