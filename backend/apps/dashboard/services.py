@@ -64,6 +64,48 @@ def get_current_timer(user):
         ),
     }
 
+def get_today_summary(user):
+    """
+    Return today's productivity summary.
+    """
+
+    today = timezone.localdate()
+
+    entries = get_completed_entries(user).filter(
+        start_time__date=today,
+    )
+
+    total_seconds = 0
+    billable_seconds = 0
+    earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if entry.duration:
+            seconds = entry.duration.total_seconds()
+
+            total_seconds += seconds
+
+            if entry.billable:
+                billable_seconds += seconds
+
+        earnings += entry.earnings
+
+    return {
+        "hours": round(
+            total_seconds / 3600,
+            2,
+        ),
+        "billable_hours": round(
+            billable_seconds / 3600,
+            2,
+        ),
+        "earnings": earnings,
+        "entries": entries.count(),
+        "completed_tasks": entries.exclude(
+            task=None,
+        ).count(),
+    }
 
 def get_today_hours(user):
     today = timezone.localdate()
@@ -409,6 +451,7 @@ def get_dashboard_data(user):
         "summary": {
             "running_timer": get_running_timer(user),
             "current_timer": get_current_timer(user),
+            "today": get_today_summary(user),
             "today_hours": get_today_hours(user),
             "this_week_hours": get_this_week_hours(user),
             "this_month_hours": get_this_month_hours(user),

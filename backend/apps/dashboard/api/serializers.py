@@ -26,12 +26,30 @@ class DashboardCurrentTimerSerializer(
 
     elapsed_seconds = serializers.IntegerField()
 
+class DashboardTodaySerializer(
+    serializers.Serializer,
+):
+    hours = serializers.FloatField()
+
+    billable_hours = serializers.FloatField()
+
+    earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    entries = serializers.IntegerField()
+
+    completed_tasks = serializers.IntegerField()
+
 class DashboardSummarySerializer(serializers.Serializer):
     running_timer = serializers.BooleanField()
 
     current_timer = DashboardCurrentTimerSerializer(
         allow_null=True,
     )
+
+    today = DashboardTodaySerializer()
 
     today_hours = serializers.FloatField()
 
