@@ -64,24 +64,21 @@ def get_current_timer(user):
         ),
     }
 
-def get_today_summary(user):
+def build_productivity_summary(entries):
     """
-    Return today's productivity summary.
+    Build a productivity summary from a queryset of completed entries.
     """
-
-    today = timezone.localdate()
-
-    entries = get_completed_entries(user).filter(
-        start_time__date=today,
-    )
 
     total_seconds = 0
+
     billable_seconds = 0
+
     earnings = Decimal("0.00")
 
     for entry in entries:
 
         if entry.duration:
+
             seconds = entry.duration.total_seconds()
 
             total_seconds += seconds
@@ -96,16 +93,35 @@ def get_today_summary(user):
             total_seconds / 3600,
             2,
         ),
+
         "billable_hours": round(
             billable_seconds / 3600,
             2,
         ),
+
         "earnings": earnings,
+
         "entries": entries.count(),
+
         "completed_tasks": entries.exclude(
             task=None,
         ).count(),
     }
+
+def get_today_summary(user):
+    """
+    Return today's productivity summary.
+    """
+
+    today = timezone.localdate()
+
+    entries = get_completed_entries(user).filter(
+        start_time__date=today,
+    )
+
+    return build_productivity_summary(
+        entries,
+    )
 
 def get_week_summary(user):
     """
@@ -118,53 +134,13 @@ def get_week_summary(user):
         days=today.weekday(),
     )
 
-    entries = (
-        get_completed_entries(user)
-        .filter(
-            start_time__date__gte=week_start,
-        )
+    entries = get_completed_entries(user).filter(
+        start_time__date__gte=week_start,
     )
 
-    total_seconds = 0
-
-    billable_seconds = 0
-
-    earnings = Decimal("0.00")
-
-    for entry in entries:
-
-        if entry.duration:
-
-            seconds = (
-                entry.duration.total_seconds()
-            )
-
-            total_seconds += seconds
-
-            if entry.billable:
-                billable_seconds += seconds
-
-        earnings += entry.earnings
-
-    return {
-        "hours": round(
-            total_seconds / 3600,
-            2,
-        ),
-
-        "billable_hours": round(
-            billable_seconds / 3600,
-            2,
-        ),
-
-        "earnings": earnings,
-
-        "entries": entries.count(),
-
-        "completed_tasks": entries.exclude(
-            task=None,
-        ).count(),
-    }
+    return build_productivity_summary(
+        entries,
+    )
 
 def get_month_summary(user):
     """
