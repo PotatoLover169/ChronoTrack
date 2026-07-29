@@ -30,6 +30,40 @@ def get_running_timer(user):
         status=TimeEntryStatus.RUNNING,
     ).exists()
 
+def get_current_timer(user):
+    """
+    Return the currently running timer.
+    """
+
+    timer = (
+        TimeEntry.objects
+        .filter(
+            owner=user,
+            status=TimeEntryStatus.RUNNING,
+        )
+        .select_related(
+            "project",
+            "task",
+        )
+        .first()
+    )
+
+    if not timer:
+        return None
+
+    elapsed = timezone.now() - timer.start_time
+
+    return {
+        "id": timer.id,
+        "project": timer.project,
+        "task": timer.task,
+        "description": timer.description,
+        "start_time": timer.start_time,
+        "elapsed_seconds": int(
+            elapsed.total_seconds()
+        ),
+    }
+
 
 def get_today_hours(user):
     today = timezone.localdate()
@@ -374,6 +408,7 @@ def get_dashboard_data(user):
     return {
         "summary": {
             "running_timer": get_running_timer(user),
+            "current_timer": get_current_timer(user),
             "today_hours": get_today_hours(user),
             "this_week_hours": get_this_week_hours(user),
             "this_month_hours": get_this_month_hours(user),

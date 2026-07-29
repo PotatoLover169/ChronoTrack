@@ -9,9 +9,29 @@ from apps.tasks.api.serializers import (
 
 from apps.tracker.models import TimeEntry
 
+class DashboardCurrentTimerSerializer(
+    serializers.Serializer,
+):
+    id = serializers.IntegerField()
+
+    project = ProjectSummarySerializer()
+
+    task = TaskSummarySerializer(
+        allow_null=True,
+    )
+
+    description = serializers.CharField()
+
+    start_time = serializers.DateTimeField()
+
+    elapsed_seconds = serializers.IntegerField()
 
 class DashboardSummarySerializer(serializers.Serializer):
     running_timer = serializers.BooleanField()
+
+    current_timer = DashboardCurrentTimerSerializer(
+        allow_null=True,
+    )
 
     today_hours = serializers.FloatField()
 
