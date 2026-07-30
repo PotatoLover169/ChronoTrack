@@ -81,26 +81,75 @@ def approve_edit_request(
         time_entry.task = edit_request.requested_task
 
     if edit_request.requested_start_time is not None:
-        time_entry.start_time = edit_request.requested_start_time
+        time_entry.start_time = (
+            edit_request.requested_start_time
+        )
 
     if edit_request.requested_end_time is not None:
-        time_entry.end_time = edit_request.requested_end_time
+        time_entry.end_time = (
+            edit_request.requested_end_time
+        )
 
-    time_entry.description = edit_request.requested_description
-    time_entry.billable = edit_request.requested_billable
+    time_entry.description = (
+        edit_request.requested_description
+    )
 
-    time_entry.save()
+    time_entry.billable = (
+        edit_request.requested_billable
+    )
 
-    edit_request.status = EditRequestStatus.APPROVED
+    # ---------------------------------------
+    # Recalculate duration
+    # ---------------------------------------
+
+    if (
+        time_entry.start_time
+        and time_entry.end_time
+    ):
+        time_entry.duration = (
+            time_entry.end_time
+            - time_entry.start_time
+        )
+
+    else:
+        time_entry.duration = None
+
+    time_entry.save(
+        update_fields=[
+            "project",
+            "task",
+            "start_time",
+            "end_time",
+            "description",
+            "billable",
+            "duration",
+        ]
+    )
+
+    edit_request.status = (
+        EditRequestStatus.APPROVED
+    )
+
     edit_request.reviewed_by = manager
-    edit_request.reviewed_at = timezone.now()
-    edit_request.manager_comment = manager_comment
 
-    edit_request.save()
+    edit_request.reviewed_at = (
+        timezone.now()
+    )
+
+    edit_request.manager_comment = (
+        manager_comment
+    )
+
+    edit_request.save(
+        update_fields=[
+            "status",
+            "reviewed_by",
+            "reviewed_at",
+            "manager_comment",
+        ]
+    )
 
     return edit_request
-
-from django.utils import timezone
 
 
 @transaction.atomic
@@ -124,10 +173,19 @@ def reject_edit_request(
             "Manager comment is required."
         )
 
-    edit_request.status = EditRequestStatus.REJECTED
+    edit_request.status = (
+        EditRequestStatus.REJECTED
+    )
+
     edit_request.reviewed_by = manager
-    edit_request.reviewed_at = timezone.now()
-    edit_request.manager_comment = manager_comment
+
+    edit_request.reviewed_at = (
+        timezone.now()
+    )
+
+    edit_request.manager_comment = (
+        manager_comment
+    )
 
     edit_request.save(
         update_fields=[
@@ -135,6 +193,39 @@ def reject_edit_request(
             "reviewed_by",
             "reviewed_at",
             "manager_comment",
+        ]
+    )
+
+    return edit_request
+
+
+@transaction.atomic
+def cancel_edit_request(
+    *,
+    user,
+    edit_request,
+):
+    """
+    Cancel a pending edit request.
+    """
+
+    if edit_request.requested_by != user:
+        raise ValueError(
+            "You can only cancel your own requests."
+        )
+
+    if edit_request.status != EditRequestStatus.PENDING:
+        raise ValueError(
+            "Only pending requests can be cancelled."
+        )
+
+    edit_request.status = (
+        EditRequestStatus.CANCELLED
+    )
+
+    edit_request.save(
+        update_fields=[
+            "status",
         ]
     )
 

@@ -149,52 +149,14 @@ def get_month_summary(user):
 
     today = timezone.localdate()
 
-    entries = (
-        get_completed_entries(user)
-        .filter(
-            start_time__year=today.year,
-            start_time__month=today.month,
-        )
+    entries = get_completed_entries(user).filter(
+        start_time__year=today.year,
+        start_time__month=today.month,
     )
 
-    total_seconds = 0
-
-    billable_seconds = 0
-
-    earnings = Decimal("0.00")
-
-    for entry in entries:
-
-        if entry.duration:
-
-            seconds = entry.duration.total_seconds()
-
-            total_seconds += seconds
-
-            if entry.billable:
-                billable_seconds += seconds
-
-        earnings += entry.earnings
-
-    return {
-        "hours": round(
-            total_seconds / 3600,
-            2,
-        ),
-
-        "billable_hours": round(
-            billable_seconds / 3600,
-            2,
-        ),
-
-        "earnings": earnings,
-
-        "entries": entries.count(),
-
-        "completed_tasks": entries.exclude(
-            task=None,
-        ).count(),
-    }
+    return build_productivity_summary(
+        entries,
+    )
 
 def get_today_hours(user):
     today = timezone.localdate()
