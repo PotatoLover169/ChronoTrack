@@ -6,6 +6,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.approvals.permissions import (
+    IsEmployee,
+    IsManagerOrAdmin,
+)
+
 from apps.approvals.exceptions import (
     EditRequestAlreadyReviewedError,
     PendingEditRequestExistsError,
@@ -33,7 +38,7 @@ class CreateTimeEntryEditRequestView(
     generics.CreateAPIView,
 ):
     """
-    Employee submits an edit request for a completed time entry.
+    Employee submits an edit request.
     """
 
     serializer_class = (
@@ -42,6 +47,7 @@ class CreateTimeEntryEditRequestView(
 
     permission_classes = (
         IsAuthenticated,
+        IsEmployee,
     )
 
     def perform_create(
@@ -89,11 +95,12 @@ class CreateTimeEntryEditRequestView(
 
         serializer.instance = edit_request
 
-class PendingTimeEntryEditRequestListView(
+
+class MyTimeEntryEditRequestListView(
     generics.ListAPIView,
 ):
     """
-    List all pending edit requests.
+    Employee views only his own requests.
     """
 
     serializer_class = (
@@ -102,6 +109,91 @@ class PendingTimeEntryEditRequestListView(
 
     permission_classes = (
         IsAuthenticated,
+        IsEmployee,
+    )
+
+    def get_queryset(self):
+        return (
+            TimeEntryEditRequest.objects.filter(
+                requested_by=self.request.user,
+            )
+            .select_related(
+                "time_entry",
+                "requested_project",
+                "requested_task",
+                "reviewed_by",
+            )
+            .order_by("-requested_at")
+        )
+
+
+class CancelTimeEntryEditRequestView(
+    generics.GenericAPIView,
+):
+    """
+    Employee cancels his own pending request.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+        IsEmployee,
+    )
+
+    def patch(
+        self,
+        request,
+        pk,
+    ):
+        edit_request = get_object_or_404(
+            TimeEntryEditRequest,
+            pk=pk,
+            requested_by=request.user,
+        )
+
+        if edit_request.status != EditRequestStatus.PENDING:
+            return Response(
+                {
+                    "detail": (
+                        "Only pending requests can be cancelled."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        edit_request.status = (
+            EditRequestStatus.CANCELLED
+        )
+
+        edit_request.save(
+            update_fields=[
+                "status",
+            ]
+        )
+
+        return Response(
+            {
+                "message": (
+                    "Edit request cancelled successfully."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class PendingTimeEntryEditRequestListView(
+    generics.ListAPIView,
+):
+    """
+    Manager/Admin views pending requests.
+    """
+
+    serializer_class = (
+        TimeEntryEditRequestDetailSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+        IsManagerOrAdmin,
     )
 
     def get_queryset(self):
@@ -124,7 +216,7 @@ class TimeEntryEditRequestDetailView(
     generics.RetrieveAPIView,
 ):
     """
-    Retrieve a single edit request.
+    Manager/Admin views one request.
     """
 
     serializer_class = (
@@ -133,6 +225,7 @@ class TimeEntryEditRequestDetailView(
 
     permission_classes = (
         IsAuthenticated,
+        IsManagerOrAdmin,
     )
 
     def get_queryset(self):
@@ -151,13 +244,16 @@ class ApproveTimeEntryEditRequestView(
     generics.GenericAPIView,
 ):
     """
-    Approve an edit request.
+    Manager/Admin approves a request.
     """
 
-    serializer_class = ManagerCommentSerializer
+    serializer_class = (
+        ManagerCommentSerializer
+    )
 
     permission_classes = (
         IsAuthenticated,
+        IsManagerOrAdmin,
     )
 
     def get_queryset(self):
@@ -219,13 +315,16 @@ class RejectTimeEntryEditRequestView(
     generics.GenericAPIView,
 ):
     """
-    Reject an edit request.
+    Manager/Admin rejects a request.
     """
 
-    serializer_class = ManagerCommentSerializer
+    serializer_class = (
+        ManagerCommentSerializer
+    )
 
     permission_classes = (
         IsAuthenticated,
+        IsManagerOrAdmin,
     )
 
     def get_queryset(self):

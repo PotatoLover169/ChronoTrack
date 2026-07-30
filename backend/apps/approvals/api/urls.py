@@ -2,21 +2,41 @@ from django.urls import path
 
 from .views import (
     ApproveTimeEntryEditRequestView,
+    CancelTimeEntryEditRequestView,
     CreateTimeEntryEditRequestView,
+    MyTimeEntryEditRequestListView,
     PendingTimeEntryEditRequestListView,
     RejectTimeEntryEditRequestView,
     TimeEntryEditRequestDetailView,
 )
 
 urlpatterns = [
-    # Employee
+    # ==========================
+    # Employee Endpoints
+    # ==========================
+
     path(
         "time-entry-edit-requests/create/",
         CreateTimeEntryEditRequestView.as_view(),
         name="create-time-entry-edit-request",
     ),
 
-    # Manager And Admin
+    path(
+        "time-entry-edit-requests/my/",
+        MyTimeEntryEditRequestListView.as_view(),
+        name="my-time-entry-edit-requests",
+    ),
+
+    path(
+        "time-entry-edit-requests/<int:pk>/cancel/",
+        CancelTimeEntryEditRequestView.as_view(),
+        name="cancel-time-entry-edit-request",
+    ),
+
+    # ==========================
+    # Manager / Admin Endpoints
+    # ==========================
+
     path(
         "time-entry-edit-requests/",
         PendingTimeEntryEditRequestListView.as_view(),
