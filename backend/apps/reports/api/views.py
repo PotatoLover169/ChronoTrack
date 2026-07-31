@@ -12,11 +12,13 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from apps.reports.services import (
+    get_daily_report,
     get_report_summary,
     get_timesheet_report,
 )
 
 from .serializers import (
+    DailyReportSerializer,
     ReportSummarySerializer,
     TimesheetReportSerializer,
 )
@@ -50,6 +52,36 @@ class ReportSummaryView(
             serializer.data,
         )
 
+class DailyReportView(
+    generics.GenericAPIView,
+):
+    """
+    Return today's report for the authenticated user.
+    """
+
+    serializer_class = (
+        DailyReportSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        report = get_daily_report(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            report,
+        )
+
+        return Response(
+            serializer.data,
+        )
 
 class TimesheetReportView(
     generics.GenericAPIView,
