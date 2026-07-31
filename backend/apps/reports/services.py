@@ -276,3 +276,75 @@ def get_weekly_report(
         ),
         "entries": entries,
     }
+
+from calendar import month_name
+
+
+def get_monthly_report(
+    *,
+    user,
+):
+    """
+    Return the current month's report.
+    """
+
+    today = timezone.localdate()
+
+    entries = (
+        TimeEntry.objects.filter(
+            owner=user,
+            status=TimeEntryStatus.COMPLETED,
+            start_time__year=today.year,
+            start_time__month=today.month,
+        )
+        .select_related(
+            "project",
+            "task",
+        )
+        .order_by("start_time")
+    )
+
+    total_entries = entries.count()
+
+    total_hours = Decimal("0.00")
+    billable_hours = Decimal("0.00")
+    non_billable_hours = Decimal("0.00")
+    total_earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        total_hours += hours
+
+        if entry.billable:
+            billable_hours += hours
+            total_earnings += entry.earnings
+        else:
+            non_billable_hours += hours
+
+    return {
+        "month": month_name[today.month],
+        "year": today.year,
+        "total_entries": total_entries,
+        "total_hours": total_hours.quantize(
+            Decimal("0.01")
+        ),
+        "billable_hours": billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "non_billable_hours": non_billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "total_earnings": total_earnings.quantize(
+            Decimal("0.01")
+        ),
+        "entries": entries,
+    }

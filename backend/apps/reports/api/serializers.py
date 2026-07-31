@@ -179,68 +179,8 @@ class DailyReportSerializer(
 
 
 # ==========================================================
-# Weekly Report Serializers
+# Weekly Report Serializer
 # ==========================================================
-
-
-class WeeklyReportEntrySerializer(
-    serializers.ModelSerializer,
-):
-    """
-    Individual time entry shown inside
-    the Weekly Report.
-    """
-
-    project = serializers.CharField(
-        source="project.name",
-        read_only=True,
-    )
-
-    task = serializers.SerializerMethodField()
-
-    duration_hours = serializers.SerializerMethodField()
-
-    earnings = serializers.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        read_only=True,
-    )
-
-    class Meta:
-        model = TimeEntry
-
-        fields = (
-            "id",
-            "project",
-            "task",
-            "description",
-            "start_time",
-            "end_time",
-            "duration_hours",
-            "billable",
-            "earnings",
-        )
-
-    def get_task(
-        self,
-        obj,
-    ):
-        if obj.task:
-            return obj.task.title
-
-        return None
-
-    def get_duration_hours(
-        self,
-        obj,
-    ):
-        if not obj.duration:
-            return 0
-
-        return round(
-            obj.duration.total_seconds() / 3600,
-            2,
-        )
 
 
 class WeeklyReportSerializer(
@@ -276,6 +216,49 @@ class WeeklyReportSerializer(
         decimal_places=2,
     )
 
-    entries = WeeklyReportEntrySerializer(
+    entries = DailyReportEntrySerializer(
+        many=True,
+    )
+
+
+# ==========================================================
+# Monthly Report Serializer
+# ==========================================================
+
+
+class MonthlyReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Serializer for the Monthly Report endpoint.
+    """
+
+    month = serializers.CharField()
+
+    year = serializers.IntegerField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    total_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    entries = DailyReportEntrySerializer(
         many=True,
     )
