@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     DailyReportView,
+    WeeklyReportView,
     ReportSummaryView,
     TimesheetReportView,
     TimesheetCSVExportView,
@@ -34,5 +35,11 @@ urlpatterns = [
         "me/daily/",
         DailyReportView.as_view(),
         name="daily-report",
-),
+        ),
+
+    path(
+        "me/weekly/",
+        WeeklyReportView.as_view(),
+        name="weekly-report",
+        ),
 ]

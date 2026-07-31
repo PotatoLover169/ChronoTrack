@@ -1,4 +1,7 @@
 from decimal import Decimal
+from datetime import timedelta
+
+from django.utils import timezone
 
 from apps.tracker.models import (
     TimeEntry,
@@ -79,7 +82,7 @@ def get_timesheet_report(
     project_id=None,
     client_id=None,
     billable=None,
-    ordering="-start_time"
+    ordering="-start_time",
 ):
     """
     Return completed time entries with optional filters.
@@ -120,10 +123,10 @@ def get_timesheet_report(
         )
 
     allowed_ordering = {
-    "start_time",
-    "-start_time",
-    "hourly_rate",
-    "-hourly_rate",
+        "start_time",
+        "-start_time",
+        "hourly_rate",
+        "-hourly_rate",
     }
 
     if ordering not in allowed_ordering:
@@ -132,8 +135,6 @@ def get_timesheet_report(
     return entries.order_by(
         ordering,
     )
-
-from django.utils import timezone
 
 
 def get_daily_report(
@@ -187,6 +188,79 @@ def get_daily_report(
 
     return {
         "date": today,
+        "total_entries": total_entries,
+        "total_hours": total_hours.quantize(
+            Decimal("0.01")
+        ),
+        "billable_hours": billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "non_billable_hours": non_billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "total_earnings": total_earnings.quantize(
+            Decimal("0.01")
+        ),
+        "entries": entries,
+    }
+
+
+def get_weekly_report(
+    *,
+    user,
+):
+    """
+    Return this week's report for the authenticated user.
+    """
+
+    today = timezone.localdate()
+
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+
+    entries = (
+        TimeEntry.objects.filter(
+            owner=user,
+            status=TimeEntryStatus.COMPLETED,
+            start_time__date__gte=week_start,
+            start_time__date__lte=week_end,
+        )
+        .select_related(
+            "project",
+            "task",
+        )
+        .order_by("start_time")
+    )
+
+    total_entries = entries.count()
+
+    total_hours = Decimal("0.00")
+    billable_hours = Decimal("0.00")
+    non_billable_hours = Decimal("0.00")
+    total_earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        total_hours += hours
+
+        if entry.billable:
+            billable_hours += hours
+            total_earnings += entry.earnings
+        else:
+            non_billable_hours += hours
+
+    return {
+        "week_start": week_start,
+        "week_end": week_end,
         "total_entries": total_entries,
         "total_hours": total_hours.quantize(
             Decimal("0.01")

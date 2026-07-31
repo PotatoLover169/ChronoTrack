@@ -13,12 +13,14 @@ from rest_framework.response import Response
 
 from apps.reports.services import (
     get_daily_report,
+    get_weekly_report,
     get_report_summary,
     get_timesheet_report,
 )
 
 from .serializers import (
     DailyReportSerializer,
+    WeeklyReportSerializer,
     ReportSummarySerializer,
     TimesheetReportSerializer,
 )
@@ -72,6 +74,37 @@ class DailyReportView(
         request,
     ):
         report = get_daily_report(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            report,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class WeeklyReportView(
+    generics.GenericAPIView,
+):
+    """
+    Return this week's report for the authenticated user.
+    """
+
+    serializer_class = (
+        WeeklyReportSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        report = get_weekly_report(
             user=request.user,
         )
 
