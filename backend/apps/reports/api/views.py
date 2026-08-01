@@ -17,6 +17,8 @@ from apps.reports.services import (
     get_monthly_report,
     get_report_summary,
     get_timesheet_report,
+    get_project_report,
+    get_client_report,
 )
 
 from .serializers import (
@@ -25,6 +27,8 @@ from .serializers import (
     MonthlyReportSerializer,
     ReportSummarySerializer,
     TimesheetReportSerializer,
+    ProjectReportSerializer,
+    ClientReportSerializer,
 )
 
 
@@ -139,6 +143,72 @@ class MonthlyReportView(
     ):
         report = get_monthly_report(
             user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            report,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class ProjectReportView(
+    generics.GenericAPIView,
+):
+    """
+    Return report for a specific project.
+    """
+
+    serializer_class = (
+        ProjectReportSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(
+        self,
+        request,
+        project_id,
+    ):
+        report = get_project_report(
+            user=request.user,
+            project_id=project_id,
+        )
+
+        serializer = self.get_serializer(
+            report,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class ClientReportView(
+    generics.GenericAPIView,
+):
+    """
+    Return a report for a specific client.
+    """
+
+    serializer_class = (
+        ClientReportSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(
+        self,
+        request,
+        client_id,
+    ):
+        report = get_client_report(
+            user=request.user,
+            client_id=client_id,
         )
 
         serializer = self.get_serializer(

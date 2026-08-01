@@ -8,6 +8,8 @@ from .views import (
     TimesheetReportView,
     TimesheetCSVExportView,
     TimesheetExcelExportView,
+    ProjectReportView,
+    ClientReportView,
 )
 
 urlpatterns = [
@@ -48,5 +50,17 @@ urlpatterns = [
         "me/monthly/",
         MonthlyReportView.as_view(),
         name="monthly-report",
+        ),
+
+    path(
+        "projects/<int:project_id>/",
+        ProjectReportView.as_view(),
+        name="project-report",
+        ),
+
+    path(
+        "clients/<int:client_id>/",
+        ClientReportView.as_view(),
+        name="client-report",
         ),
 ]

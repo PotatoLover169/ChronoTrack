@@ -1,7 +1,10 @@
 from decimal import Decimal
 from datetime import timedelta
 
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
+from apps.projects.models import Project
 
 from apps.tracker.models import (
     TimeEntry,
@@ -333,6 +336,153 @@ def get_monthly_report(
     return {
         "month": month_name[today.month],
         "year": today.year,
+        "total_entries": total_entries,
+        "total_hours": total_hours.quantize(
+            Decimal("0.01")
+        ),
+        "billable_hours": billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "non_billable_hours": non_billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "total_earnings": total_earnings.quantize(
+            Decimal("0.01")
+        ),
+        "entries": entries,
+    }
+
+def get_project_report(
+    *,
+    user,
+    project_id,
+):
+    """
+    Return a report for a single project.
+    """
+
+    project = get_object_or_404(
+        Project,
+        id=project_id,
+        owner=user,
+    )
+
+    entries = (
+        TimeEntry.objects.filter(
+            owner=user,
+            project=project,
+            status=TimeEntryStatus.COMPLETED,
+        )
+        .select_related(
+            "project",
+            "task",
+        )
+        .order_by("start_time")
+    )
+
+    total_entries = entries.count()
+
+    total_hours = Decimal("0.00")
+
+    billable_hours = Decimal("0.00")
+
+    non_billable_hours = Decimal("0.00")
+
+    total_earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        total_hours += hours
+
+        if entry.billable:
+            billable_hours += hours
+            total_earnings += entry.earnings
+        else:
+            non_billable_hours += hours
+
+    return {
+        "project": project,
+        "total_entries": total_entries,
+        "total_hours": total_hours.quantize(
+            Decimal("0.01")
+        ),
+        "billable_hours": billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "non_billable_hours": non_billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "total_earnings": total_earnings.quantize(
+            Decimal("0.01")
+        ),
+        "entries": entries,
+    }
+
+def get_client_report(
+    *,
+    user,
+    client_id,
+):
+    """
+    Return report for a specific client.
+    """
+
+    entries = (
+        TimeEntry.objects.filter(
+            owner=user,
+            status=TimeEntryStatus.COMPLETED,
+            project__client_id=client_id,
+        )
+        .select_related(
+            "project",
+            "project__client",
+            "task",
+        )
+        .order_by("start_time")
+    )
+
+    if not entries.exists():
+        return None
+
+    client = entries.first().project.client
+
+    total_entries = entries.count()
+
+    total_hours = Decimal("0.00")
+    billable_hours = Decimal("0.00")
+    non_billable_hours = Decimal("0.00")
+    total_earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        total_hours += hours
+
+        if entry.billable:
+            billable_hours += hours
+            total_earnings += entry.earnings
+        else:
+            non_billable_hours += hours
+
+    return {
+        "client": client,
         "total_entries": total_entries,
         "total_hours": total_hours.quantize(
             Decimal("0.01")

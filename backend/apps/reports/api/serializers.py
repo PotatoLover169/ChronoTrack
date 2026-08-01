@@ -262,3 +262,108 @@ class MonthlyReportSerializer(
     entries = DailyReportEntrySerializer(
         many=True,
     )
+
+# ==========================================================
+# Project Report Serializers
+# ==========================================================
+
+
+class ProjectReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Serializer for the Project Report endpoint.
+    """
+
+    project = serializers.SerializerMethodField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    total_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    entries = DailyReportEntrySerializer(
+        many=True,
+    )
+
+    def get_project(
+        self,
+        obj,
+    ):
+        project = obj["project"]
+
+        return {
+            "id": project.id,
+            "name": project.name,
+            "client": project.client.name,
+            "status": project.status,
+            "hourly_rate": project.hourly_rate,
+        }
+
+# ==========================================================
+# Client Report Serializer
+# ==========================================================
+
+
+class ClientReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Serializer for the Client Report endpoint.
+    """
+
+    client = serializers.SerializerMethodField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    total_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    entries = DailyReportEntrySerializer(
+        many=True,
+    )
+
+    def get_client(
+        self,
+        obj,
+    ):
+        client = obj["client"]
+
+        return {
+            "id": client.id,
+            "name": client.name,
+        }
