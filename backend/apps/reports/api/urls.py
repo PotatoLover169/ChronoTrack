@@ -10,6 +10,7 @@ from .views import (
     TimesheetExcelExportView,
     ProjectReportView,
     ClientReportView,
+    DashboardAnalyticsView,
 )
 
 urlpatterns = [
@@ -62,5 +63,11 @@ urlpatterns = [
         "clients/<int:client_id>/",
         ClientReportView.as_view(),
         name="client-report",
+        ),
+
+    path(
+        "dashboard/",
+        DashboardAnalyticsView.as_view(),
+        name="dashboard-analytics",
         ),
 ]

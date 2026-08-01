@@ -367,3 +367,79 @@ class ClientReportSerializer(
             "id": client.id,
             "name": client.name,
         }
+
+# ==========================================================
+# Dashboard Analytics Serializers
+# ==========================================================
+
+
+class DashboardProjectSerializer(
+    serializers.Serializer,
+):
+    id = serializers.IntegerField(
+        source="project__id",
+    )
+
+    name = serializers.CharField(
+        source="project__name",
+    )
+
+
+class DashboardClientSerializer(
+    serializers.Serializer,
+):
+    id = serializers.IntegerField(
+        source="project__client__id",
+    )
+
+    name = serializers.CharField(
+        source="project__client__name",
+    )
+
+
+class DashboardAnalyticsSerializer(
+    serializers.Serializer,
+):
+    today_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    week_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    month_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    completed_entries = serializers.IntegerField()
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    active_projects = serializers.IntegerField()
+
+    completed_projects = serializers.IntegerField()
+
+    top_project = DashboardProjectSerializer(
+        allow_null=True,
+    )
+
+    top_client = DashboardClientSerializer(
+        allow_null=True,
+    )

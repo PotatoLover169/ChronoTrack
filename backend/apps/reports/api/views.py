@@ -19,6 +19,7 @@ from apps.reports.services import (
     get_timesheet_report,
     get_project_report,
     get_client_report,
+    get_dashboard_analytics,
 )
 
 from .serializers import (
@@ -29,6 +30,7 @@ from .serializers import (
     TimesheetReportSerializer,
     ProjectReportSerializer,
     ClientReportSerializer,
+    DashboardAnalyticsSerializer,
 )
 
 
@@ -213,6 +215,37 @@ class ClientReportView(
 
         serializer = self.get_serializer(
             report,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class DashboardAnalyticsView(
+    generics.GenericAPIView,
+):
+    """
+    Return dashboard analytics for the authenticated user.
+    """
+
+    serializer_class = (
+        DashboardAnalyticsSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        analytics = get_dashboard_analytics(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            analytics,
         )
 
         return Response(

@@ -498,3 +498,143 @@ def get_client_report(
         ),
         "entries": entries,
     }
+
+from django.db.models import Sum
+
+
+def get_dashboard_analytics(
+    *,
+    user,
+):
+    """
+    Return dashboard analytics for the authenticated user.
+    """
+
+    today = timezone.localdate()
+
+    week_start = today - timedelta(
+        days=today.weekday(),
+    )
+
+    completed_entries = get_completed_entries(
+        user,
+    ).select_related(
+        "project",
+        "project__client",
+    )
+
+    total_entries = completed_entries.count()
+
+    today_hours = Decimal("0.00")
+    week_hours = Decimal("0.00")
+    month_hours = Decimal("0.00")
+    billable_hours = Decimal("0.00")
+    non_billable_hours = Decimal("0.00")
+    estimated_earnings = Decimal("0.00")
+
+    for entry in completed_entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        if entry.start_time.date() == today:
+            today_hours += hours
+
+        if entry.start_time.date() >= week_start:
+            week_hours += hours
+
+        if (
+            entry.start_time.year == today.year
+            and entry.start_time.month == today.month
+        ):
+            month_hours += hours
+
+        if entry.billable:
+            billable_hours += hours
+        else:
+            non_billable_hours += hours
+
+        estimated_earnings += entry.earnings
+
+    active_projects = (
+        completed_entries
+        .values("project")
+        .distinct()
+        .count()
+    )
+
+    completed_projects = (
+        completed_entries
+        .filter(
+            project__status="completed",
+        )
+        .values("project")
+        .distinct()
+        .count()
+    )
+
+    top_project = (
+        completed_entries
+        .values(
+            "project__id",
+            "project__name",
+        )
+        .annotate(
+            total_duration=Sum(
+                "duration",
+            )
+        )
+        .order_by(
+            "-total_duration",
+        )
+        .first()
+    )
+
+    top_client = (
+        completed_entries
+        .values(
+            "project__client__id",
+            "project__client__name",
+        )
+        .annotate(
+            total_duration=Sum(
+                "duration",
+            )
+        )
+        .order_by(
+            "-total_duration",
+        )
+        .first()
+    )
+
+    return {
+        "today_hours": today_hours.quantize(
+            Decimal("0.01")
+        ),
+        "week_hours": week_hours.quantize(
+            Decimal("0.01")
+        ),
+        "month_hours": month_hours.quantize(
+            Decimal("0.01")
+        ),
+        "completed_entries": total_entries,
+        "billable_hours": billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "non_billable_hours": non_billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "estimated_earnings": estimated_earnings.quantize(
+            Decimal("0.01")
+        ),
+        "active_projects": active_projects,
+        "completed_projects": completed_projects,
+        "top_project": top_project,
+        "top_client": top_client,
+    }
