@@ -20,6 +20,7 @@ from apps.reports.services import (
     get_project_report,
     get_client_report,
     get_dashboard_analytics,
+    get_productivity_analytics,
 )
 
 from .serializers import (
@@ -31,6 +32,7 @@ from .serializers import (
     ProjectReportSerializer,
     ClientReportSerializer,
     DashboardAnalyticsSerializer,
+    ProductivityAnalyticsSerializer,
 )
 
 
@@ -246,6 +248,38 @@ class DashboardAnalyticsView(
 
         serializer = self.get_serializer(
             analytics,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class ProductivityAnalyticsView(
+    generics.GenericAPIView,
+):
+    """
+    Return productivity analytics.
+    """
+
+    serializer_class = (
+        ProductivityAnalyticsSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        data = get_productivity_analytics(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            data,
+            many=True,
         )
 
         return Response(

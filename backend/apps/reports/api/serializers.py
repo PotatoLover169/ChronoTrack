@@ -443,3 +443,20 @@ class DashboardAnalyticsSerializer(
     top_client = DashboardClientSerializer(
         allow_null=True,
     )
+
+# ==========================================================
+# Productivity Analytics Serializer
+# ==========================================================
+
+
+class ProductivityAnalyticsSerializer(serializers.Serializer):
+    """
+    Serializer for dashboard productivity analytics.
+    """
+
+    date = serializers.DateField()
+
+    hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )

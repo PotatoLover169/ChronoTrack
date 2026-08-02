@@ -638,3 +638,59 @@ def get_dashboard_analytics(
         "top_project": top_project,
         "top_client": top_client,
     }
+
+from collections import defaultdict
+
+def get_productivity_analytics(
+    *,
+    user,
+):
+    """
+    Return the last 7 days of productivity.
+    """
+
+    today = timezone.localdate()
+
+    start_date = today - timedelta(days=6)
+
+    entries = (
+        get_completed_entries(user)
+        .filter(
+            start_time__date__gte=start_date,
+        )
+        .order_by("start_time")
+    )
+
+    daily_hours = defaultdict(Decimal)
+
+    for entry in entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        day = entry.start_time.date()
+
+        daily_hours[day] += hours
+
+    results = []
+
+    for i in range(7):
+
+        current_day = start_date + timedelta(days=i)
+
+        results.append(
+            {
+                "date": current_day,
+                "hours": daily_hours[current_day].quantize(
+                    Decimal("0.01")
+                ),
+            }
+        )
+
+    return results

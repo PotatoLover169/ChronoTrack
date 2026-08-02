@@ -11,6 +11,7 @@ from .views import (
     ProjectReportView,
     ClientReportView,
     DashboardAnalyticsView,
+    ProductivityAnalyticsView,
 )
 
 urlpatterns = [
@@ -69,5 +70,11 @@ urlpatterns = [
         "dashboard/",
         DashboardAnalyticsView.as_view(),
         name="dashboard-analytics",
+        ),
+
+    path(
+        "dashboard/productivity/",
+        ProductivityAnalyticsView.as_view(),
+        name="productivity-analytics",
         ),
 ]
