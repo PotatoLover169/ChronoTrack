@@ -279,6 +279,26 @@ from collections import (
     defaultdict,
 )
 
+def get_recent_projects(
+    user,
+    limit=5,
+):
+    """
+    Return the user's most recently updated projects.
+    """
+
+    return (
+        Project.objects.filter(
+            owner=user,
+        )
+        .select_related(
+            "client",
+        )
+        .order_by(
+            "-updated_at",
+        )[:limit]
+    )
+
 def get_top_projects(
     user,
     limit=5,

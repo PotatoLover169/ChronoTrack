@@ -6,13 +6,14 @@ from rest_framework.views import APIView
 from apps.dashboard.services import (
     get_dashboard_data,
     get_recent_entries,
+    get_recent_projects,
 )
 
 from .serializers import (
     DashboardSerializer,
     DashboardRecentEntrySerializer,
+    DashboardRecentProjectSerializer,
 )
-
 
 class HealthCheckAPIView(APIView):
     """
@@ -87,6 +88,38 @@ class DashboardRecentEntriesAPIView(
 
         serializer = self.get_serializer(
             entries,
+            many=True,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class DashboardRecentProjectsAPIView(
+    generics.GenericAPIView,
+):
+    """
+    Return recently updated projects.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = (
+        DashboardRecentProjectSerializer
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        projects = get_recent_projects(
+            request.user,
+        )
+
+        serializer = self.get_serializer(
+            projects,
             many=True,
         )
 

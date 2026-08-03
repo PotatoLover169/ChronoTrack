@@ -4,6 +4,7 @@ from .views import (
     DashboardAPIView,
     DashboardRecentEntriesAPIView,
     HealthCheckAPIView,
+    DashboardRecentProjectsAPIView,
 )
 
 urlpatterns = [
@@ -23,5 +24,11 @@ urlpatterns = [
         "health/",
         HealthCheckAPIView.as_view(),
         name="health-check",
+    ),
+    
+    path(
+    "recent-projects/",
+    DashboardRecentProjectsAPIView.as_view(),
+    name="dashboard-recent-projects",
     ),
 ]
