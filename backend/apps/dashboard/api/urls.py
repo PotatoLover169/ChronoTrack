@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     DashboardAPIView,
+    DashboardRecentEntriesAPIView,
     HealthCheckAPIView,
 )
 
@@ -10,6 +11,12 @@ urlpatterns = [
         "",
         DashboardAPIView.as_view(),
         name="dashboard",
+    ),
+
+    path(
+        "recent-entries/",
+        DashboardRecentEntriesAPIView.as_view(),
+        name="dashboard-recent-entries",
     ),
 
     path(

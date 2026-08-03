@@ -3,9 +3,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.dashboard.services import get_dashboard_data
+from apps.dashboard.services import (
+    get_dashboard_data,
+    get_recent_entries,
+)
 
-from .serializers import DashboardSerializer
+from .serializers import (
+    DashboardSerializer,
+    DashboardRecentEntrySerializer,
+)
 
 
 class HealthCheckAPIView(APIView):
@@ -51,7 +57,38 @@ class DashboardAPIView(generics.GenericAPIView):
                 "project_status_breakdown": dashboard["project_status_breakdown"],
                 "charts": dashboard["charts"],
             }
-)
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+
+class DashboardRecentEntriesAPIView(
+    generics.GenericAPIView,
+):
+    """
+    Return recent completed time entries.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = DashboardRecentEntrySerializer
+
+    def get(
+        self,
+        request,
+    ):
+        entries = get_recent_entries(
+            request.user,
+        )
+
+        serializer = self.get_serializer(
+            entries,
+            many=True,
+        )
 
         return Response(
             serializer.data,
