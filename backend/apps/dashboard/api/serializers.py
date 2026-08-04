@@ -8,7 +8,7 @@ from apps.tasks.api.serializers import (
 )
 
 from apps.projects.models import Project
-
+from apps.tasks.models import Task
 from apps.tracker.models import TimeEntry
 
 class DashboardCurrentTimerSerializer(
@@ -157,6 +157,30 @@ class DashboardRecentProjectSerializer(
             "status",
             "hourly_rate",
             "updated_at",
+        )
+
+class DashboardUpcomingTaskSerializer(
+    serializers.ModelSerializer,
+):
+    """
+    Serializer for upcoming tasks.
+    """
+
+    project = serializers.CharField(
+        source="project.name",
+        read_only=True,
+    )
+
+    class Meta:
+        model = Task
+
+        fields = (
+            "id",
+            "title",
+            "project",
+            "priority",
+            "status",
+            "due_date",
         )
 
 class DashboardTopProjectSerializer(

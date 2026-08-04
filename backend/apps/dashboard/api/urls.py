@@ -5,6 +5,7 @@ from .views import (
     DashboardRecentEntriesAPIView,
     HealthCheckAPIView,
     DashboardRecentProjectsAPIView,
+    DashboardUpcomingTasksAPIView,
 )
 
 urlpatterns = [
@@ -12,7 +13,7 @@ urlpatterns = [
         "",
         DashboardAPIView.as_view(),
         name="dashboard",
-    ),
+        ),
 
     path(
         "recent-entries/",
@@ -24,11 +25,17 @@ urlpatterns = [
         "health/",
         HealthCheckAPIView.as_view(),
         name="health-check",
-    ),
+        ),
     
     path(
-    "recent-projects/",
-    DashboardRecentProjectsAPIView.as_view(),
-    name="dashboard-recent-projects",
-    ),
+        "recent-projects/",
+        DashboardRecentProjectsAPIView.as_view(),
+        name="dashboard-recent-projects",
+        ),
+        
+    path(
+        "upcoming-tasks/",
+        DashboardUpcomingTasksAPIView.as_view(),
+        name="dashboard-upcoming-tasks",
+        ),
 ]

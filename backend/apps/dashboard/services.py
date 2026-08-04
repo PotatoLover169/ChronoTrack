@@ -8,6 +8,7 @@ from apps.approvals.models import (
 )
 from apps.clients.models import Client
 from apps.projects.models import Project
+from apps.tasks.models import Task
 from apps.tracker.models import (
     TimeEntry,
     TimeEntryStatus,
@@ -296,6 +297,33 @@ def get_recent_projects(
         )
         .order_by(
             "-updated_at",
+        )[:limit]
+    )
+
+def get_upcoming_tasks(
+    user,
+    limit=5,
+):
+    """
+    Return upcoming tasks ordered by due date.
+    """
+
+    today = timezone.localdate()
+
+    return (
+        Task.objects.filter(
+            owner=user,
+            due_date__isnull=False,
+            due_date__gte=today,
+        )
+        .exclude(
+            status="completed",
+        )
+        .select_related(
+            "project",
+        )
+        .order_by(
+            "due_date",
         )[:limit]
     )
 

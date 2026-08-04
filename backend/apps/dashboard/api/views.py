@@ -7,12 +7,14 @@ from apps.dashboard.services import (
     get_dashboard_data,
     get_recent_entries,
     get_recent_projects,
+    get_upcoming_tasks,
 )
 
 from .serializers import (
     DashboardSerializer,
     DashboardRecentEntrySerializer,
     DashboardRecentProjectSerializer,
+    DashboardUpcomingTaskSerializer,
 )
 
 class HealthCheckAPIView(APIView):
@@ -120,6 +122,38 @@ class DashboardRecentProjectsAPIView(
 
         serializer = self.get_serializer(
             projects,
+            many=True,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class DashboardUpcomingTasksAPIView(
+    generics.GenericAPIView,
+):
+    """
+    Return upcoming tasks.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = (
+        DashboardUpcomingTaskSerializer
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        tasks = get_upcoming_tasks(
+            request.user,
+        )
+
+        serializer = self.get_serializer(
+            tasks,
             many=True,
         )
 
