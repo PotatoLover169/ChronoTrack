@@ -351,6 +351,25 @@ def get_overdue_tasks(
         )[:limit]
     )
 
+def get_active_timer(
+    user,
+):
+    """
+    Return the currently running timer.
+    """
+
+    return (
+        TimeEntry.objects.filter(
+            owner=user,
+            status=TimeEntryStatus.RUNNING,
+        )
+        .select_related(
+            "project",
+            "task",
+        )
+        .first()
+    )
+
 def get_top_projects(
     user,
     limit=5,

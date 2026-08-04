@@ -7,6 +7,7 @@ from .views import (
     DashboardRecentProjectsAPIView,
     DashboardUpcomingTasksAPIView,
     DashboardOverdueTasksAPIView,
+    DashboardActiveTimerAPIView,
 )
 
 urlpatterns = [
@@ -44,5 +45,11 @@ urlpatterns = [
         "overdue-tasks/",
         DashboardOverdueTasksAPIView.as_view(),
         name="dashboard-overdue-tasks",
+        ),
+
+    path(
+        "active-timer/",
+        DashboardActiveTimerAPIView.as_view(),
+        name="dashboard-active-timer",
         ),
 ]

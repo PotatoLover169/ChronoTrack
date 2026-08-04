@@ -3,12 +3,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.utils import timezone
+
 from apps.dashboard.services import (
     get_dashboard_data,
     get_recent_entries,
     get_recent_projects,
     get_upcoming_tasks,
     get_overdue_tasks,
+    get_active_timer,
 )
 
 from .serializers import (
@@ -16,6 +19,7 @@ from .serializers import (
     DashboardRecentEntrySerializer,
     DashboardRecentProjectSerializer,
     DashboardUpcomingTaskSerializer,
+    DashboardCurrentTimerSerializer,
 )
 
 class HealthCheckAPIView(APIView):
@@ -188,6 +192,53 @@ class DashboardOverdueTasksAPIView(
         serializer = self.get_serializer(
             tasks,
             many=True,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class DashboardActiveTimerAPIView(
+    generics.GenericAPIView,
+):
+    """
+    Return the currently running timer.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = (
+        DashboardCurrentTimerSerializer
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        timer = get_active_timer(
+            request.user,
+        )
+
+        if timer is None:
+            return Response(None)
+
+        elapsed_seconds = int(
+            (
+                timezone.now() - timer.start_time
+            ).total_seconds()
+        )
+
+        serializer = self.get_serializer(
+            {
+                "id": timer.id,
+                "project": timer.project,
+                "task": timer.task,
+                "description": timer.description,
+                "start_time": timer.start_time,
+                "elapsed_seconds": elapsed_seconds,
+            }
         )
 
         return Response(
