@@ -6,6 +6,7 @@ from .views import (
     HealthCheckAPIView,
     DashboardRecentProjectsAPIView,
     DashboardUpcomingTasksAPIView,
+    DashboardOverdueTasksAPIView,
 )
 
 urlpatterns = [
@@ -37,5 +38,11 @@ urlpatterns = [
         "upcoming-tasks/",
         DashboardUpcomingTasksAPIView.as_view(),
         name="dashboard-upcoming-tasks",
+        ),
+
+    path(
+        "overdue-tasks/",
+        DashboardOverdueTasksAPIView.as_view(),
+        name="dashboard-overdue-tasks",
         ),
 ]

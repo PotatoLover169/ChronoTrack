@@ -8,6 +8,7 @@ from apps.dashboard.services import (
     get_recent_entries,
     get_recent_projects,
     get_upcoming_tasks,
+    get_overdue_tasks,
 )
 
 from .serializers import (
@@ -149,6 +150,38 @@ class DashboardUpcomingTasksAPIView(
         request,
     ):
         tasks = get_upcoming_tasks(
+            request.user,
+        )
+
+        serializer = self.get_serializer(
+            tasks,
+            many=True,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class DashboardOverdueTasksAPIView(
+    generics.GenericAPIView,
+):
+    """
+    Return overdue tasks.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = (
+        DashboardUpcomingTaskSerializer
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        tasks = get_overdue_tasks(
             request.user,
         )
 

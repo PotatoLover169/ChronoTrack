@@ -327,6 +327,30 @@ def get_upcoming_tasks(
         )[:limit]
     )
 
+def get_overdue_tasks(
+    user,
+    limit=5,
+):
+    """
+    Return overdue tasks.
+    """
+
+    today = timezone.localdate()
+
+    return (
+        Task.objects.filter(
+            owner=user,
+            completed=False,
+            due_date__lt=today,
+        )
+        .select_related(
+            "project",
+        )
+        .order_by(
+            "due_date",
+        )[:limit]
+    )
+
 def get_top_projects(
     user,
     limit=5,
