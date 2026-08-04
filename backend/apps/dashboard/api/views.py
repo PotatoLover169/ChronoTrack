@@ -12,6 +12,7 @@ from apps.dashboard.services import (
     get_upcoming_tasks,
     get_overdue_tasks,
     get_active_timer,
+    get_quick_stats,
 )
 
 from .serializers import (
@@ -20,6 +21,7 @@ from .serializers import (
     DashboardRecentProjectSerializer,
     DashboardUpcomingTaskSerializer,
     DashboardCurrentTimerSerializer,
+    DashboardQuickStatsSerializer,
 )
 
 class HealthCheckAPIView(APIView):
@@ -239,6 +241,37 @@ class DashboardActiveTimerAPIView(
                 "start_time": timer.start_time,
                 "elapsed_seconds": elapsed_seconds,
             }
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+class DashboardQuickStatsAPIView(
+    generics.GenericAPIView,
+):
+    """
+    Return dashboard quick statistics.
+    """
+
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = (
+        DashboardQuickStatsSerializer
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        stats = get_quick_stats(
+            request.user,
+        )
+
+        serializer = self.get_serializer(
+            stats,
         )
 
         return Response(

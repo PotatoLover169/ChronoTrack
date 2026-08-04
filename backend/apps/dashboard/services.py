@@ -584,6 +584,25 @@ def get_chart_data(user):
         ],
     }
 
+def get_quick_stats(
+    user,
+):
+    """
+    Return lightweight dashboard statistics.
+    """
+
+    return {
+        "today_hours": get_today_hours(user),
+        "this_week_hours": get_this_week_hours(user),
+        "this_month_hours": get_this_month_hours(user),
+        "active_projects": get_active_projects(user),
+        "completed_projects": get_completed_projects(user),
+        "total_clients": get_total_clients(user),
+        "billable_hours": get_billable_hours(user),
+        "estimated_earnings": get_estimated_earnings(user),
+        "pending_approvals": get_pending_approvals(),
+    }
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.
