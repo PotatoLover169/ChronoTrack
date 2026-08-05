@@ -1,11 +1,11 @@
 from django.urls import include, path
 
 urlpatterns = [
-    # Dashboard API
-    path("dashboard/", include("apps.dashboard.api.urls")),
-
     # Authentication API
     path("auth/", include("apps.accounts.api.urls")),
+
+    # Dashboard API
+    path("dashboard/", include("apps.dashboard.api.urls")),
 
     # Client API
     path("clients/", include("apps.clients.api.urls")),
@@ -22,6 +22,9 @@ urlpatterns = [
     # Reports API
     path("reports/", include("apps.reports.api.urls")),
 
-    # Dashboard API
-    path("dashboard/", include("apps.dashboard.api.urls")),
+    # Approvals API
+    path("approvals/", include("apps.approvals.api.urls")),
+
+    # Notifications API
+    path("notifications/", include("apps.notifications.api.urls")),
 ]

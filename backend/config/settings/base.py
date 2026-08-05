@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "apps.tasks",
     "apps.reports",
     "apps.clients",
-    
+    "apps.notifications",
     "apps.approvals",
 ]
 # Middleware
