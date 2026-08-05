@@ -1,6 +1,10 @@
 from apps.notifications.models import Notification
 
 
+# ======================================================
+# Generic Notification Creator
+# ======================================================
+
 def create_notification(
     recipient,
     notification_type,
@@ -8,7 +12,7 @@ def create_notification(
     message,
 ):
     """
-    Create a notification for a user.
+    Create a notification.
     """
 
     return Notification.objects.create(
@@ -19,9 +23,49 @@ def create_notification(
     )
 
 
+# ======================================================
+# Task Notifications
+# ======================================================
+
+def notify_task_created(
+    recipient,
+    task,
+):
+    """
+    Notify user when a task is created.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="task",
+        title="New Task Created",
+        message=f"{task.title} has been created successfully.",
+    )
+
+
+def notify_task_completed(
+    recipient,
+    task,
+):
+    """
+    Notify user when a task is completed.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="task",
+        title="Task Completed",
+        message=f"{task.title} has been completed.",
+    )
+
+
+# ======================================================
+# Notification Queries
+# ======================================================
+
 def get_notifications(user):
     """
-    Return all notifications for the user.
+    Return all notifications.
     """
 
     return Notification.objects.filter(
@@ -44,10 +88,11 @@ def mark_notification_as_read(
     notification,
 ):
     """
-    Mark a notification as read.
+    Mark notification as read.
     """
 
     notification.is_read = True
+
     notification.save(
         update_fields=["is_read"],
     )
