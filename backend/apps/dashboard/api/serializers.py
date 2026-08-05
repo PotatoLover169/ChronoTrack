@@ -211,6 +211,21 @@ class DashboardQuickStatsSerializer(
 
     pending_approvals = serializers.IntegerField()
 
+class DashboardFeedSerializer(
+    serializers.Serializer,
+):
+    """
+    Serializer for dashboard activity feed.
+    """
+
+    type = serializers.CharField()
+
+    title = serializers.CharField()
+
+    description = serializers.CharField()
+
+    timestamp = serializers.DateTimeField()
+
 class DashboardTopProjectSerializer(
     serializers.Serializer,
 ):

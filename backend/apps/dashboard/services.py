@@ -603,6 +603,94 @@ def get_quick_stats(
         "pending_approvals": get_pending_approvals(),
     }
 
+def get_dashboard_feed(
+    user,
+    limit=20,
+):
+    """
+    Return a unified dashboard activity feed.
+    """
+
+    activities = []
+
+    #
+    # Recent Time Entries
+    #
+    entries = (
+        get_completed_entries(user)
+        .select_related(
+            "project",
+            "task",
+        )
+        .order_by(
+            "-updated_at",
+        )[:limit]
+    )
+
+    for entry in entries:
+
+        activities.append(
+            {
+                "type": "time_entry",
+                "title": "Time Entry Logged",
+                "description": entry.description,
+                "timestamp": entry.updated_at,
+            }
+        )
+
+    #
+    # Recent Projects
+    #
+    projects = (
+        Project.objects.filter(
+            owner=user,
+        )
+        .order_by(
+            "-updated_at",
+        )[:limit]
+    )
+
+    for project in projects:
+
+        activities.append(
+            {
+                "type": "project",
+                "title": "Project Updated",
+                "description": project.name,
+                "timestamp": project.updated_at,
+            }
+        )
+
+    #
+    # Recent Tasks
+    #
+    tasks = (
+        Task.objects.filter(
+            owner=user,
+        )
+        .order_by(
+            "-updated_at",
+        )[:limit]
+    )
+
+    for task in tasks:
+
+        activities.append(
+            {
+                "type": "task",
+                "title": "Task Updated",
+                "description": task.title,
+                "timestamp": task.updated_at,
+            }
+        )
+
+    activities.sort(
+        key=lambda item: item["timestamp"],
+        reverse=True,
+    )
+
+    return activities[:limit]
+
 def get_dashboard_data(user):
     """
     Return dashboard statistics.

@@ -9,6 +9,7 @@ from .views import (
     DashboardOverdueTasksAPIView,
     DashboardActiveTimerAPIView,
     DashboardQuickStatsAPIView,
+    DashboardFeedAPIView,
 )
 
 urlpatterns = [
@@ -58,5 +59,11 @@ urlpatterns = [
         "quick-stats/",
         DashboardQuickStatsAPIView.as_view(),
         name="dashboard-quick-stats",
+        ),
+
+    path(
+        "feed/",
+        DashboardFeedAPIView.as_view(),
+        name="dashboard-feed",
         ),
 ]
