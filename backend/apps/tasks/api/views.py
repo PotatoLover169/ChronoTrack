@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.notifications.services import (
     notify_task_created,
+    notify_task_completed,
 )
 from apps.tasks.models import Task
 
@@ -44,3 +45,23 @@ class TaskRetrieveUpdateDestroyAPIView(
         return Task.objects.filter(
             owner=self.request.user,
         )
+
+    def perform_update(
+        self,
+        serializer,
+    ):
+        was_completed = (
+            serializer.instance.status
+            == "completed"
+        )
+
+        task = serializer.save()
+
+        if (
+            not was_completed
+            and task.status == "completed"
+        ):
+            notify_task_completed(
+                recipient=self.request.user,
+                task=task,
+            )
