@@ -6,7 +6,7 @@ from apps.projects.models import Project
 from apps.tasks.api.serializers import TaskSummarySerializer
 from apps.tasks.models import Task
 
-from .models import TimeEntry
+from ..models import TimeEntry
 
 
 class StartTimerSerializer(serializers.Serializer):

@@ -4,19 +4,21 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.views import APIView
 
-from .exceptions import (
-    NoRunningTimerError,
-    TimerAlreadyRunningError,
-)
 from .serializers import (
     CurrentTimerSerializer,
     StartTimerSerializer,
     TimeEntrySerializer,
 )
-from .services import (
+
+from ..services import (
     get_current_timer,
     start_timer,
     stop_timer,
+)
+
+from ..exceptions import (
+    NoRunningTimerError,
+    TimerAlreadyRunningError,
 )
 
 class StartTimerView(APIView):

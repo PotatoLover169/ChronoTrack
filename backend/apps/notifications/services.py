@@ -96,6 +96,74 @@ def notify_project_completed(
 
 
 # ======================================================
+# Tracker Notifications
+# ======================================================
+
+def notify_timer_started(
+    recipient,
+    time_entry,
+):
+    """
+    Notify user when a timer starts.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="tracker",
+        title="Timer Started",
+        message=f"Timer started for {time_entry.project.name}.",
+    )
+
+
+def notify_timer_stopped(
+    recipient,
+    time_entry,
+):
+    """
+    Notify user when a timer stops.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="tracker",
+        title="Timer Stopped",
+        message=f"Timer stopped for {time_entry.project.name}.",
+    )
+
+
+def notify_time_entry_updated(
+    recipient,
+    time_entry,
+):
+    """
+    Notify user when a time entry is updated.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="tracker",
+        title="Time Entry Updated",
+        message=f"Time entry for {time_entry.project.name} has been updated.",
+    )
+
+
+def notify_time_entry_deleted(
+    recipient,
+    time_entry,
+):
+    """
+    Notify user when a time entry is deleted.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="tracker",
+        title="Time Entry Deleted",
+        message=f"Time entry for {time_entry.project.name} has been deleted.",
+    )
+
+
+# ======================================================
 # Notification Queries
 # ======================================================
 

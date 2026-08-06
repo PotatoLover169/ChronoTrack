@@ -1,11 +1,19 @@
 from django.db import transaction
 from django.utils import timezone
 
+from apps.notifications.services import (
+    notify_timer_started,
+    notify_timer_stopped,
+)
+
 from .exceptions import (
     NoRunningTimerError,
     TimerAlreadyRunningError,
 )
-from .models import TimeEntry, TimeEntryStatus
+from .models import (
+    TimeEntry,
+    TimeEntryStatus,
+)
 
 
 def start_timer(
@@ -38,9 +46,18 @@ def start_timer(
             status=TimeEntryStatus.RUNNING,
         )
 
+        notify_timer_started(
+            recipient=user,
+            time_entry=time_entry,
+        )
+
         return time_entry
 
-def stop_timer(*, user):
+
+def stop_timer(
+    *,
+    user,
+):
     """
     Stop the user's currently running timer.
     """
@@ -59,17 +76,30 @@ def stop_timer(*, user):
         time_entry.status = TimeEntryStatus.COMPLETED
         time_entry.save()
 
+        notify_timer_stopped(
+            recipient=user,
+            time_entry=time_entry,
+        )
+
         return time_entry
 
-def get_current_timer(*, user):
+
+def get_current_timer(
+    *,
+    user,
+):
     """
     Return the user's currently running timer.
     """
 
-    return TimeEntry.objects.filter(
-        owner=user,
-        status=TimeEntryStatus.RUNNING,
-    ).select_related(
-        "project",
-        "task",
-    ).first()
+    return (
+        TimeEntry.objects.filter(
+            owner=user,
+            status=TimeEntryStatus.RUNNING,
+        )
+        .select_related(
+            "project",
+            "task",
+        )
+        .first()
+    )

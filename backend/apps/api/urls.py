@@ -17,7 +17,7 @@ urlpatterns = [
     path("tasks/", include("apps.tasks.api.urls")),
 
     # Tracker API
-    path("tracker/", include("apps.tracker.urls")),
+    path("tracker/", include("apps.tracker.api.urls")),
 
     # Reports API
     path("reports/", include("apps.reports.api.urls")),
