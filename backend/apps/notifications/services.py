@@ -60,6 +60,42 @@ def notify_task_completed(
 
 
 # ======================================================
+# Project Notifications
+# ======================================================
+
+def notify_project_created(
+    recipient,
+    project,
+):
+    """
+    Notify user when a project is created.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="project",
+        title="New Project Created",
+        message=f"{project.name} has been created successfully.",
+    )
+
+
+def notify_project_completed(
+    recipient,
+    project,
+):
+    """
+    Notify user when a project is completed.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="project",
+        title="Project Completed",
+        message=f"{project.name} has been completed.",
+    )
+
+
+# ======================================================
 # Notification Queries
 # ======================================================
 

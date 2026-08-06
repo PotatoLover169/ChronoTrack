@@ -2,6 +2,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.clients.models import Client
+
 from apps.clients.services import (
     get_client_dashboard,
 )
