@@ -1,6 +1,12 @@
 from django.db import transaction
 from django.utils import timezone
 
+from apps.notifications.services import (
+    notify_edit_request_submitted,
+    notify_edit_request_approved,
+    notify_edit_request_rejected,
+)
+
 from .exceptions import (
     EditRequestAlreadyReviewedError,
     PendingEditRequestExistsError,
@@ -53,8 +59,12 @@ def create_edit_request(
         status=EditRequestStatus.PENDING,
     )
 
-    return edit_request
+    notify_edit_request_submitted(
+        recipient=user,
+        edit_request=edit_request,
+    )
 
+    return edit_request
 
 @transaction.atomic
 def approve_edit_request(
@@ -149,6 +159,11 @@ def approve_edit_request(
         ]
     )
 
+    notify_edit_request_approved(
+        recipient=edit_request.requested_by,
+        edit_request=edit_request,
+    )
+
     return edit_request
 
 
@@ -194,6 +209,11 @@ def reject_edit_request(
             "reviewed_at",
             "manager_comment",
         ]
+    )
+
+    notify_edit_request_rejected(
+        recipient=edit_request.requested_by,
+        edit_request=edit_request,
     )
 
     return edit_request

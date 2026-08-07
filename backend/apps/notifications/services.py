@@ -162,6 +162,65 @@ def notify_time_entry_deleted(
         message=f"Time entry for {time_entry.project.name} has been deleted.",
     )
 
+# ======================================================
+# Approval Notifications
+# ======================================================
+
+def notify_edit_request_submitted(
+    recipient,
+    edit_request,
+):
+    """
+    Notify user that an edit request has been submitted.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="approval",
+        title="Edit Request Submitted",
+        message=(
+            f"Your request to edit Time Entry "
+            f"#{edit_request.time_entry.id} has been submitted."
+        ),
+    )
+
+
+def notify_edit_request_approved(
+    recipient,
+    edit_request,
+):
+    """
+    Notify user that an edit request has been approved.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="approval",
+        title="Edit Request Approved",
+        message=(
+            f"Your request for Time Entry "
+            f"#{edit_request.time_entry.id} has been approved."
+        ),
+    )
+
+
+def notify_edit_request_rejected(
+    recipient,
+    edit_request,
+):
+    """
+    Notify user that an edit request has been rejected.
+    """
+
+    return create_notification(
+        recipient=recipient,
+        notification_type="approval",
+        title="Edit Request Rejected",
+        message=(
+            f"Your request for Time Entry "
+            f"#{edit_request.time_entry.id} has been rejected."
+        ),
+    )
 
 # ======================================================
 # Notification Queries
