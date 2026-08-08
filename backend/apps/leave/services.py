@@ -158,3 +158,144 @@ def create_leave_request(
     )
 
     return leave_request
+
+@transaction.atomic
+def approve_leave_request(
+    *,
+    leave_request,
+    manager,
+    manager_comment="",
+):
+    """
+    Approve a pending leave request.
+
+    This will:
+    1. Verify the request is still pending.
+    2. Lock the employee's leave balance.
+    3. Verify sufficient remaining balance.
+    4. Deduct the requested days.
+    5. Record the manager and review timestamp.
+    6. Mark the request as approved.
+    """
+
+    # ---------------------------------------
+    # Validate request status
+    # ---------------------------------------
+
+    if leave_request.status != LeaveRequestStatus.PENDING:
+        raise LeaveRequestAlreadyReviewedError(
+            "This leave request has already been reviewed."
+        )
+
+    # ---------------------------------------
+    # Lock the employee's balance
+    # ---------------------------------------
+
+    balance = (
+        LeaveBalance.objects
+        .select_for_update()
+        .filter(
+            employee=leave_request.employee,
+            leave_type=leave_request.leave_type,
+            year=leave_request.start_date.year,
+        )
+        .first()
+    )
+
+    if balance is None:
+        raise InsufficientLeaveBalanceError(
+            "No leave balance exists for this request."
+        )
+
+    # ---------------------------------------
+    # Verify remaining balance
+    # ---------------------------------------
+
+    if balance.remaining_days < leave_request.days:
+        raise InsufficientLeaveBalanceError(
+            "Insufficient leave balance."
+        )
+
+    # ---------------------------------------
+    # Deduct leave balance
+    # ---------------------------------------
+
+    balance.used_days += leave_request.days
+
+    balance.save(
+        update_fields=[
+            "used_days",
+            "updated_at",
+        ]
+    )
+
+    # ---------------------------------------
+    # Approve request
+    # ---------------------------------------
+
+    leave_request.status = (
+        LeaveRequestStatus.APPROVED
+    )
+
+    leave_request.reviewed_by = manager
+
+    leave_request.reviewed_at = timezone.now()
+
+    leave_request.manager_comment = (
+        manager_comment.strip()
+    )
+
+    leave_request.save(
+        update_fields=[
+            "status",
+            "reviewed_by",
+            "reviewed_at",
+            "manager_comment",
+        ]
+    )
+
+    return leave_request
+
+@transaction.atomic
+def reject_leave_request(
+    *,
+    leave_request,
+    manager,
+    manager_comment,
+):
+    """
+    Reject a pending leave request.
+    """
+
+    if leave_request.status != LeaveRequestStatus.PENDING:
+        raise LeaveRequestAlreadyReviewedError(
+            "This leave request has already been reviewed."
+        )
+
+    if not manager_comment.strip():
+        raise ValueError(
+            "Manager comment is required."
+        )
+
+    leave_request.status = (
+        LeaveRequestStatus.REJECTED
+    )
+
+    leave_request.reviewed_by = manager
+
+    leave_request.reviewed_at = timezone.now()
+
+    leave_request.manager_comment = (
+        manager_comment.strip()
+    )
+
+    leave_request.save(
+        update_fields=[
+            "status",
+            "reviewed_by",
+            "reviewed_at",
+            "manager_comment",
+        ]
+    )
+
+    return leave_request
