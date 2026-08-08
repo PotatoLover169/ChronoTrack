@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.clients",
     "apps.notifications",
     "apps.approvals",
+    "apps.leave",
 ]
 # Middleware
 MIDDLEWARE = [
