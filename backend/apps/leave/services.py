@@ -299,3 +299,35 @@ def reject_leave_request(
     )
 
     return leave_request
+
+@transaction.atomic
+def cancel_leave_request(
+    *,
+    user,
+    leave_request,
+):
+    """
+    Cancel a pending leave request.
+    """
+
+    if leave_request.employee != user:
+        raise ValueError(
+            "You can only cancel your own leave requests."
+        )
+
+    if leave_request.status != LeaveRequestStatus.PENDING:
+        raise ValueError(
+            "Only pending leave requests can be cancelled."
+        )
+
+    leave_request.status = LeaveRequestStatus.CANCELLED
+    leave_request.cancelled_at = timezone.now()
+
+    leave_request.save(
+        update_fields=[
+            "status",
+            "cancelled_at",
+        ]
+    )
+
+    return leave_request
