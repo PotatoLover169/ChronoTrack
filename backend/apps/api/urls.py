@@ -27,4 +27,7 @@ urlpatterns = [
 
     # Notifications API
     path("notifications/", include("apps.notifications.api.urls")),
+
+    # Leave API
+    path("leave/", include("apps.leave.api.urls")),
 ]
