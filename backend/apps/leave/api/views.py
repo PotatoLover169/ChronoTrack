@@ -197,7 +197,7 @@ class CancelLeaveRequestView(
 
         try:
             cancel_leave_request(
-                employee=request.user,
+                user=request.user,
                 leave_request=leave_request,
             )
 
