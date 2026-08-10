@@ -274,7 +274,7 @@ class PendingLeaveRequestListView(
     )
 
     def get_queryset(self):
-        return (
+        queryset = (
             LeaveRequest.objects.filter(
                 status=LeaveRequestStatus.PENDING,
             )
@@ -287,6 +287,26 @@ class PendingLeaveRequestListView(
                 "-requested_at",
             )
         )
+
+        employee_id = self.request.query_params.get(
+            "employee",
+        )
+
+        leave_type_id = self.request.query_params.get(
+            "leave_type",
+        )
+
+        if employee_id:
+            queryset = queryset.filter(
+                employee_id=employee_id,
+            )
+
+        if leave_type_id:
+            queryset = queryset.filter(
+                leave_type_id=leave_type_id,
+            )
+
+        return queryset
 
 
 class LeaveRequestDetailView(
