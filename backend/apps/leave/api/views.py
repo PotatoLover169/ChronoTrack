@@ -6,15 +6,18 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+
 from apps.approvals.permissions import (
     IsEmployee,
     IsManagerOrAdmin,
 )
 
+
 from apps.leave.exceptions import (
     InsufficientLeaveBalanceError,
     LeaveRequestAlreadyReviewedError,
 )
+
 
 from apps.leave.models import (
     LeaveBalance,
@@ -23,12 +26,14 @@ from apps.leave.models import (
     LeaveType,
 )
 
+
 from apps.leave.services import (
     approve_leave_request,
     cancel_leave_request,
     create_leave_request,
     reject_leave_request,
 )
+
 
 from .serializers import (
     CreateLeaveRequestSerializer,
@@ -98,9 +103,9 @@ class MyLeaveBalanceListView(
         )
 
 
-# ======================================================
-# Employee Leave Requests
-# ======================================================
+# ============================================================
+# CREATE LEAVE REQUEST
+# ============================================================
 
 class CreateLeaveRequestView(
     generics.CreateAPIView,
@@ -131,6 +136,13 @@ class CreateLeaveRequestView(
                 start_date=data["start_date"],
                 end_date=data["end_date"],
                 reason=data["reason"],
+            )
+
+        except InsufficientLeaveBalanceError as exc:
+            raise serializers.ValidationError(
+                {
+                    "detail": str(exc),
+                }
             )
 
         except ValueError as exc:
@@ -350,17 +362,14 @@ class ApproveLeaveRequestView(
             status=status.HTTP_200_OK,
         )
 
-
 class RejectLeaveRequestView(
     generics.GenericAPIView,
 ):
     """
-    Manager/Admin rejects a leave request.
+    Manager/Admin rejects a pending leave request.
     """
 
-    serializer_class = (
-        ManagerCommentSerializer
-    )
+    serializer_class = ManagerCommentSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -403,15 +412,20 @@ class RejectLeaveRequestView(
                 ),
             )
 
-        except (
-            LeaveRequestAlreadyReviewedError,
-            ValueError,
-        ) as exc:
+        except LeaveRequestAlreadyReviewedError as exc:
             return Response(
                 {
                     "detail": str(exc),
                 },
                 status=status.HTTP_409_CONFLICT,
+            )
+
+        except ValueError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(
