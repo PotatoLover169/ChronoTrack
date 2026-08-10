@@ -183,6 +183,30 @@ class MyLeaveRequestListView(
             )
         )
 
+class MyLeaveRequestDetailView(
+    generics.RetrieveAPIView,
+):
+    """
+    Employee views one of their own leave requests.
+    """
+
+    serializer_class = LeaveRequestSerializer
+
+    permission_classes = (
+        IsAuthenticated,
+        IsEmployee,
+    )
+
+    def get_queryset(self):
+        return (
+            LeaveRequest.objects.filter(
+                employee=self.request.user,
+            )
+            .select_related(
+                "leave_type",
+                "reviewed_by",
+            )
+        )
 
 class CancelLeaveRequestView(
     generics.GenericAPIView,

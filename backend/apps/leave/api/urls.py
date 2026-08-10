@@ -8,12 +8,14 @@ from .views import (
     LeaveTypeListView,
     MyLeaveBalanceListView,
     MyLeaveRequestListView,
+    MyLeaveRequestDetailView,
     PendingLeaveRequestListView,
     RejectLeaveRequestView,
 )
 
 
 urlpatterns = [
+
     # ==================================================
     # Leave Types
     # ==================================================
@@ -44,6 +46,12 @@ urlpatterns = [
         "requests/my/",
         MyLeaveRequestListView.as_view(),
         name="my-leave-requests",
+    ),
+
+    path(
+        "requests/my/<int:pk>/",
+        MyLeaveRequestDetailView.as_view(),
+        name="my-leave-request-detail",
     ),
 
     path(
