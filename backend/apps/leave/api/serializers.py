@@ -54,6 +54,37 @@ class LeaveBalanceSerializer(
 
         read_only_fields = fields
 
+class ManageLeaveBalanceSerializer(
+    serializers.ModelSerializer,
+):
+    employee = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+    )
+
+    remaining_days = serializers.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        read_only=True,
+    )
+
+    leave_type = LeaveTypeSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = LeaveBalance
+
+        fields = (
+            "id",
+            "employee",
+            "leave_type",
+            "year",
+            "allocated_days",
+            "used_days",
+            "remaining_days",
+        )
+
+        read_only_fields = fields
 
 class CreateLeaveRequestSerializer(
     serializers.ModelSerializer,

@@ -11,6 +11,7 @@ from .views import (
     MyLeaveRequestDetailView,
     PendingLeaveRequestListView,
     RejectLeaveRequestView,
+    ManageLeaveBalanceListView,
 )
 
 
@@ -86,5 +87,11 @@ urlpatterns = [
         "requests/<int:pk>/reject/",
         RejectLeaveRequestView.as_view(),
         name="reject-leave-request",
+    ),
+
+    path(
+        "balances/manage/",
+        ManageLeaveBalanceListView.as_view(),
+        name="manage-leave-balances",
     ),
 ]

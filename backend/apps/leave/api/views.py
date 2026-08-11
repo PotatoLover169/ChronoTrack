@@ -41,6 +41,7 @@ from .serializers import (
     LeaveRequestSerializer,
     LeaveTypeSerializer,
     ManagerCommentSerializer,
+    ManageLeaveBalanceSerializer,
 )
 
 
@@ -102,6 +103,62 @@ class MyLeaveBalanceListView(
             )
         )
 
+class ManageLeaveBalanceListView(
+    generics.ListAPIView,
+):
+    """
+    Manager/Admin views employee leave balances.
+    """
+
+    serializer_class = ManageLeaveBalanceSerializer
+
+    permission_classes = (
+        IsAuthenticated,
+        IsManagerOrAdmin,
+    )
+
+    def get_queryset(self):
+        queryset = (
+            LeaveBalance.objects
+            .select_related(
+                "employee",
+                "leave_type",
+            )
+            .order_by(
+                "employee_id",
+                "leave_type__name",
+                "-year",
+            )
+        )
+
+        employee_id = self.request.query_params.get(
+            "employee",
+        )
+
+        leave_type_id = self.request.query_params.get(
+            "leave_type",
+        )
+
+        year = self.request.query_params.get(
+            "year",
+        )
+
+        if employee_id:
+            queryset = queryset.filter(
+                employee_id=employee_id,
+            )
+
+        if leave_type_id:
+            queryset = queryset.filter(
+                leave_type_id=leave_type_id,
+            )
+
+        if year:
+            queryset = queryset.filter(
+                year=year,
+            )
+
+        return queryset
 
 # ============================================================
 # CREATE LEAVE REQUEST
