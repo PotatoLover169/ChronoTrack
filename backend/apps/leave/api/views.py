@@ -32,6 +32,7 @@ from apps.leave.services import (
     cancel_leave_request,
     create_leave_request,
     reject_leave_request,
+    update_leave_balance,
 )
 
 
@@ -42,6 +43,7 @@ from .serializers import (
     LeaveTypeSerializer,
     ManagerCommentSerializer,
     ManageLeaveBalanceSerializer,
+    UpdateLeaveBalanceSerializer,
 )
 
 
@@ -159,6 +161,76 @@ class ManageLeaveBalanceListView(
             )
 
         return queryset
+
+class UpdateLeaveBalanceView(
+    generics.GenericAPIView,
+):
+    """
+    Manager/Admin updates an employee's
+    allocated leave balance.
+    """
+
+    serializer_class = (
+        UpdateLeaveBalanceSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+        IsManagerOrAdmin,
+    )
+
+    def get_queryset(self):
+        return (
+            LeaveBalance.objects.select_related(
+                "employee",
+                "leave_type",
+            )
+        )
+
+    def patch(
+        self,
+        request,
+        pk,
+    ):
+        leave_balance = get_object_or_404(
+            self.get_queryset(),
+            pk=pk,
+        )
+
+        serializer = self.get_serializer(
+            leave_balance,
+            data=request.data,
+            partial=True,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        try:
+            update_leave_balance(
+                leave_balance=leave_balance,
+                allocated_days=(
+                    serializer.validated_data[
+                        "allocated_days"
+                    ]
+                ),
+            )
+
+        except ValueError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            ManageLeaveBalanceSerializer(
+                leave_balance,
+            ).data,
+            status=status.HTTP_200_OK,
+        )
 
 # ============================================================
 # CREATE LEAVE REQUEST

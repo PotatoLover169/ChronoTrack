@@ -86,6 +86,27 @@ class ManageLeaveBalanceSerializer(
 
         read_only_fields = fields
 
+class UpdateLeaveBalanceSerializer(
+    serializers.ModelSerializer,
+):
+    class Meta:
+        model = LeaveBalance
+
+        fields = (
+            "allocated_days",
+        )
+
+    def validate_allocated_days(
+        self,
+        value,
+    ):
+        if value < 0:
+            raise serializers.ValidationError(
+                "Allocated days cannot be negative."
+            )
+
+        return value
+
 class CreateLeaveRequestSerializer(
     serializers.ModelSerializer,
 ):

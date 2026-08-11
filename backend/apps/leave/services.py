@@ -331,3 +331,42 @@ def cancel_leave_request(
     )
 
     return leave_request
+
+@transaction.atomic
+def update_leave_balance(
+    *,
+    leave_balance,
+    allocated_days,
+):
+    """
+    Update the allocated leave days.
+
+    Used by managers/admins to manually adjust
+    an employee's annual leave allocation.
+
+    Used days are never modified here.
+    Remaining days are calculated automatically
+    from the model property.
+    """
+
+    if allocated_days < 0:
+        raise ValueError(
+            "Allocated days cannot be negative."
+        )
+
+    if allocated_days < leave_balance.used_days:
+        raise ValueError(
+            "Allocated days cannot be less than "
+            "the days already used."
+        )
+
+    leave_balance.allocated_days = allocated_days
+
+    leave_balance.save(
+        update_fields=[
+            "allocated_days",
+            "updated_at",
+        ]
+    )
+
+    return leave_balance

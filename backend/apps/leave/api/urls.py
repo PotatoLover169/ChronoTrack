@@ -12,6 +12,7 @@ from .views import (
     PendingLeaveRequestListView,
     RejectLeaveRequestView,
     ManageLeaveBalanceListView,
+    UpdateLeaveBalanceView,
 )
 
 
@@ -93,5 +94,11 @@ urlpatterns = [
         "balances/manage/",
         ManageLeaveBalanceListView.as_view(),
         name="manage-leave-balances",
+    ),
+
+    path(
+        "balances/manage/<int:pk>/",
+        UpdateLeaveBalanceView.as_view(),
+        name="update-leave-balance",
     ),
 ]
