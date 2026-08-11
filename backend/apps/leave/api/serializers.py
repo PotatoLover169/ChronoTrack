@@ -1,8 +1,13 @@
+from decimal import Decimal
+
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 
 from apps.leave.models import (
     LeaveBalance,
     LeaveRequest,
+    LeaveSettlement,
     LeaveType,
 )
 
@@ -54,6 +59,7 @@ class LeaveBalanceSerializer(
 
         read_only_fields = fields
 
+
 class ManageLeaveBalanceSerializer(
     serializers.ModelSerializer,
 ):
@@ -86,6 +92,7 @@ class ManageLeaveBalanceSerializer(
 
         read_only_fields = fields
 
+
 class UpdateLeaveBalanceSerializer(
     serializers.ModelSerializer,
 ):
@@ -106,6 +113,7 @@ class UpdateLeaveBalanceSerializer(
             )
 
         return value
+
 
 class CreateLeaveRequestSerializer(
     serializers.ModelSerializer,
@@ -168,4 +176,62 @@ class ManagerCommentSerializer(
         required=False,
         allow_blank=True,
         trim_whitespace=True,
+    )
+
+
+class LeaveSettlementSerializer(
+    serializers.ModelSerializer,
+):
+    employee = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+    )
+
+    leave_type = LeaveTypeSerializer(
+        read_only=True,
+    )
+
+    processed_by = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+    )
+
+    class Meta:
+        model = LeaveSettlement
+
+        fields = (
+            "id",
+            "employee",
+            "leave_type",
+            "year",
+            "allocated_days",
+            "used_days",
+            "unused_days",
+            "daily_salary_rate",
+            "converted_amount",
+            "processed_by",
+            "processed_at",
+        )
+
+        read_only_fields = fields
+
+class CreateLeaveSettlementSerializer(
+    serializers.Serializer,
+):
+    employee = serializers.PrimaryKeyRelatedField(
+        queryset=get_user_model().objects.all(),
+    )
+
+    leave_type = serializers.PrimaryKeyRelatedField(
+        queryset=LeaveType.objects.filter(
+            is_active=True,
+        ),
+    )
+
+    year = serializers.IntegerField(
+        min_value=2000,
+    )
+
+    daily_salary_rate = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        min_value=Decimal("0.00"),
     )

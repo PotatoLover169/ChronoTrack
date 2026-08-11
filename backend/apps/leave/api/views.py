@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 
+
 from rest_framework import generics
 from rest_framework import serializers
 from rest_framework import status
@@ -32,14 +33,17 @@ from apps.leave.services import (
     cancel_leave_request,
     create_leave_request,
     reject_leave_request,
+    settle_leave_balance,
     update_leave_balance,
 )
 
 
 from .serializers import (
     CreateLeaveRequestSerializer,
+    CreateLeaveSettlementSerializer,
     LeaveBalanceSerializer,
     LeaveRequestSerializer,
+    LeaveSettlementSerializer,
     LeaveTypeSerializer,
     ManagerCommentSerializer,
     ManageLeaveBalanceSerializer,
@@ -235,6 +239,81 @@ class UpdateLeaveBalanceView(
 # ============================================================
 # CREATE LEAVE REQUEST
 # ============================================================
+
+class CreateLeaveSettlementView(
+    generics.CreateAPIView,
+):
+    """
+    Manager/Admin processes the year-end
+    conversion of unused leave into salary.
+    """
+
+    serializer_class = (
+        CreateLeaveSettlementSerializer
+    )
+
+    permission_classes = (
+        IsAuthenticated,
+        IsManagerOrAdmin,
+    )
+
+    def create(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        try:
+            settlement = settle_leave_balance(
+                employee=(
+                    serializer.validated_data[
+                        "employee"
+                    ]
+                ),
+                leave_type=(
+                    serializer.validated_data[
+                        "leave_type"
+                    ]
+                ),
+                year=(
+                    serializer.validated_data[
+                        "year"
+                    ]
+                ),
+                daily_salary_rate=(
+                    serializer.validated_data[
+                        "daily_salary_rate"
+                    ]
+                ),
+                processed_by=request.user,
+            )
+
+        except ValueError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        response_serializer = (
+            LeaveSettlementSerializer(
+                settlement,
+            )
+        )
+
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
 
 class CreateLeaveRequestView(
     generics.CreateAPIView,

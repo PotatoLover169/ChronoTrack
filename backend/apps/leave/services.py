@@ -15,6 +15,7 @@ from .models import (
     LeaveBalance,
     LeaveRequest,
     LeaveRequestStatus,
+    LeaveSettlement,
 )
 
 
@@ -370,3 +371,137 @@ def update_leave_balance(
     )
 
     return leave_balance
+
+
+@transaction.atomic
+def settle_leave_balance(
+    *,
+    employee,
+    leave_type,
+    year,
+    daily_salary_rate,
+    processed_by,
+):
+    """
+    Process the year-end settlement of an employee's
+    unused leave balance.
+
+    This will:
+    1. Lock the employee's leave balance.
+    2. Calculate unused leave days.
+    3. Calculate the salary conversion amount.
+    4. Create a LeaveSettlement record.
+    5. Create the next year's leave balance.
+    6. Prevent duplicate settlements.
+    """
+
+    # ---------------------------------------
+    # Validate salary rate
+    # ---------------------------------------
+
+    if daily_salary_rate < Decimal("0"):
+        raise ValueError(
+            "Daily salary rate cannot be negative."
+        )
+
+    # ---------------------------------------
+    # Get and lock current year's balance
+    # ---------------------------------------
+
+    balance = (
+        LeaveBalance.objects
+        .select_for_update()
+        .filter(
+            employee=employee,
+            leave_type=leave_type,
+            year=year,
+        )
+        .first()
+    )
+
+    if balance is None:
+        raise ValueError(
+            "No leave balance exists for "
+            f"{year}."
+        )
+
+    # ---------------------------------------
+    # Prevent duplicate settlement
+    # ---------------------------------------
+
+    settlement_exists = (
+        LeaveSettlement.objects
+        .filter(
+            employee=employee,
+            leave_type=leave_type,
+            year=year,
+        )
+        .exists()
+    )
+
+    if settlement_exists:
+        raise ValueError(
+            "This leave balance has already "
+            "been settled."
+        )
+
+    # ---------------------------------------
+    # Validate balance consistency
+    # ---------------------------------------
+
+    if balance.used_days > balance.allocated_days:
+        raise ValueError(
+            "Used leave days cannot exceed "
+            "allocated leave days."
+        )
+
+    # ---------------------------------------
+    # Calculate unused leave
+    # ---------------------------------------
+
+    unused_days = (
+        balance.allocated_days
+        - balance.used_days
+    )
+
+    # ---------------------------------------
+    # Calculate salary conversion
+    # ---------------------------------------
+
+    converted_amount = (
+        unused_days * daily_salary_rate
+    )
+
+    # ---------------------------------------
+    # Create settlement record
+    # ---------------------------------------
+
+    settlement = LeaveSettlement.objects.create(
+        employee=employee,
+        leave_type=leave_type,
+        year=year,
+        allocated_days=balance.allocated_days,
+        used_days=balance.used_days,
+        unused_days=unused_days,
+        daily_salary_rate=daily_salary_rate,
+        converted_amount=converted_amount,
+        processed_by=processed_by,
+    )
+
+    # ---------------------------------------
+    # Create next year's balance
+    # ---------------------------------------
+
+    next_year = year + 1
+
+    LeaveBalance.objects.get_or_create(
+        employee=employee,
+        leave_type=leave_type,
+        year=next_year,
+        defaults={
+            "allocated_days": leave_type.default_days,
+            "used_days": Decimal("0"),
+        },
+    )
+
+    return settlement

@@ -4,6 +4,7 @@ from .views import (
     ApproveLeaveRequestView,
     CancelLeaveRequestView,
     CreateLeaveRequestView,
+    CreateLeaveSettlementView,
     LeaveRequestDetailView,
     LeaveTypeListView,
     MyLeaveBalanceListView,
@@ -100,5 +101,11 @@ urlpatterns = [
         "balances/manage/<int:pk>/",
         UpdateLeaveBalanceView.as_view(),
         name="update-leave-balance",
+    ),
+
+    path(
+        "balances/settle/",
+        CreateLeaveSettlementView.as_view(),
+        name="create-leave-settlement",
     ),
 ]

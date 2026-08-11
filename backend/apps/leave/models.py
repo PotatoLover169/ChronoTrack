@@ -214,3 +214,89 @@ class LeaveRequest(models.Model):
             f"{self.employee} - "
             f"{self.leave_type.name}"
         )
+
+class LeaveSettlement(models.Model):
+    """
+    Records the year-end conversion of unused leave
+    into salary.
+    """
+
+    employee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="leave_settlements",
+    )
+
+    leave_type = models.ForeignKey(
+        LeaveType,
+        on_delete=models.PROTECT,
+        related_name="settlements",
+    )
+
+    year = models.PositiveIntegerField()
+
+    allocated_days = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+    )
+
+    used_days = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+    )
+
+    unused_days = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+    )
+
+    daily_salary_rate = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    converted_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    processed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="processed_leave_settlements",
+    )
+
+    processed_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = (
+            "-year",
+            "employee",
+            "leave_type",
+        )
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "employee",
+                    "leave_type",
+                    "year",
+                ],
+                name="unique_leave_settlement_per_year",
+            ),
+        ]
+
+        verbose_name = "Leave Settlement"
+
+        verbose_name_plural = (
+            "Leave Settlements"
+        )
+
+    def __str__(self):
+        return (
+            f"{self.employee} - "
+            f"{self.leave_type.name} - "
+            f"{self.year}"
+        )
