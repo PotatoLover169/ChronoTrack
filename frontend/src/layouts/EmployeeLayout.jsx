@@ -1,11 +1,11 @@
 import { Outlet } from "react-router-dom";
 
+import Sidebar from "../components/navigation/Sidebar";
+
 function EmployeeLayout() {
   return (
     <div>
-      <aside>
-        Employee Sidebar
-      </aside>
+      <Sidebar />
 
       <main>
         <Outlet />
