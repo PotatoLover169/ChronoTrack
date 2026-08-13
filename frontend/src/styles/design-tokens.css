@@ -1,0 +1,19 @@
+:root {
+  --color-primary: #4F46E5;
+  --color-timer: #F59E0B;
+  --color-success: #16A34A;
+  --color-danger: #DC2626;
+
+  --color-light-background: #F6F7F9;
+  --color-light-surface: #FFFFFF;
+  --color-light-text: #18181B;
+  --color-light-muted: #71717A;
+  --color-light-border: #E4E4E7;
+
+  --color-dark-background: #111113;
+  --color-dark-surface: #18181B;
+  --color-dark-elevated: #202023;
+  --color-dark-text: #F4F4F5;
+  --color-dark-muted: #A1A1AA;
+  --color-dark-border: #2A2A2E;
+}
