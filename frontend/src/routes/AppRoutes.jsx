@@ -7,6 +7,7 @@ import Tasks from "../pages/employee/Tasks/Tasks";
 import TimeTracking from "../pages/employee/TimeTracking/TimeTracking";
 import Reports from "../pages/employee/Reports/Reports";
 import Clients from "../pages/employee/Clients/Clients";
+import Leave from "../pages/employee/Leave/Leave";
 
 function AppRoutes() {
   return (
@@ -18,6 +19,7 @@ function AppRoutes() {
         <Route path="/time-tracking" element={<TimeTracking />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/clients" element={<Clients />} />
+        <Route path="/leave" element={<Leave />} />
       </Route>
     </Routes>
   );
