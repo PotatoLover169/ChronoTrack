@@ -1,0 +1,30 @@
+/* ================================
+   EMPLOYEE APPLICATION LAYOUT
+================================ */
+
+.employee-layout {
+  min-height: 100dvh;
+  width: 100%;
+
+  display: flex;
+
+  background: #f6f7f9;
+}
+
+
+/* ================================
+   MAIN CONTENT
+================================ */
+
+.employee-main {
+  width: calc(100% - 250px);
+  min-width: 0;
+  min-height: 100dvh;
+
+  margin-left: 250px;
+
+  box-sizing: border-box;
+  padding: 32px;
+
+  color: #18181b;
+}
