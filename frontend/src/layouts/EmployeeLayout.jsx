@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/navigation/Sidebar";
+import EmployeeHeader from "../components/navigation/EmployeeHeader";
 
 import "../styles/sidebar.css";
 import "../styles/layout.css";
@@ -10,7 +11,11 @@ function EmployeeLayout() {
       <Sidebar />
 
       <main className="employee-main">
-        <Outlet />
+        <EmployeeHeader />
+
+        <section className="employee-content">
+          <Outlet />
+        </section>
       </main>
     </div>
   );
