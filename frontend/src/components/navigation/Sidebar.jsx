@@ -1,65 +1,178 @@
 import { NavLink } from "react-router-dom";
 
+import "../../styles/sidebar.css";
+
 function Sidebar() {
   return (
-    <aside>
+    <aside className="sidebar">
       {/* Brand */}
-      <div>
-        <h1>ChronoTrack</h1>
-        <p>Time & Productivity</p>
+      <div className="sidebar-brand">
+        <div className="sidebar-brand-mark">
+          CT
+        </div>
+
+        <div>
+          <h1 className="sidebar-brand-name">
+            ChronoTrack
+          </h1>
+
+          <p className="sidebar-brand-subtitle">
+            Time & Productivity
+          </p>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav>
-        <div>
-          <p>Overview</p>
+      <nav className="sidebar-nav">
+        {/* Overview */}
+        <div className="sidebar-section">
+          <p className="sidebar-section-label">
+            Overview
+          </p>
 
-          <NavLink to="/">
-            Dashboard
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              □
+            </span>
+
+            <span>Dashboard</span>
           </NavLink>
         </div>
 
-        <div>
-          <p>Workspace</p>
+        {/* Workspace */}
+        <div className="sidebar-section">
+          <p className="sidebar-section-label">
+            Workspace
+          </p>
 
-          <NavLink to="/projects">
-            Projects
+          <NavLink
+            to="/projects"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              ◇
+            </span>
+
+            <span>Projects</span>
           </NavLink>
 
-          <NavLink to="/tasks">
-            Tasks
+          <NavLink
+            to="/tasks"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              ✓
+            </span>
+
+            <span>Tasks</span>
           </NavLink>
 
-          <NavLink to="/time-tracking">
-            Time Tracking
+          <NavLink
+            to="/time-tracking"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              ◷
+            </span>
+
+            <span>Time Tracking</span>
           </NavLink>
         </div>
 
-        <div>
-          <p>Insights</p>
+        {/* Insights */}
+        <div className="sidebar-section">
+          <p className="sidebar-section-label">
+            Insights
+          </p>
 
-          <NavLink to="/reports">
-            Reports
+          <NavLink
+            to="/reports"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              ≡
+            </span>
+
+            <span>Reports</span>
           </NavLink>
         </div>
 
-        <div>
-          <p>Organization</p>
+        {/* Organization */}
+        <div className="sidebar-section">
+          <p className="sidebar-section-label">
+            Organization
+          </p>
 
-          <NavLink to="/clients">
-            Clients
+          <NavLink
+            to="/clients"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              ○
+            </span>
+
+            <span>Clients</span>
           </NavLink>
 
-          <NavLink to="/leave">
-            Leave
+          <NavLink
+            to="/leave"
+            className={({ isActive }) =>
+              `sidebar-link ${
+                isActive ? "sidebar-link-active" : ""
+              }`
+            }
+          >
+            <span className="sidebar-link-icon">
+              □
+            </span>
+
+            <span>Leave</span>
           </NavLink>
         </div>
       </nav>
 
-      {/* Bottom */}
-      <div>
-        <NavLink to="/settings">
-          Settings
+      {/* Bottom Navigation */}
+      <div className="sidebar-bottom">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `sidebar-link ${
+              isActive ? "sidebar-link-active" : ""
+            }`
+          }
+        >
+          <span className="sidebar-link-icon">
+            ⚙
+          </span>
+
+          <span>Settings</span>
         </NavLink>
       </div>
     </aside>
