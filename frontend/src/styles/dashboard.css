@@ -199,3 +199,32 @@
     padding: 16px;
   }
 }
+
+/* ================================
+   SUMMARY CARD DETAILS
+================================ */
+
+.dashboard-summary-card small {
+  color: #a1a1aa;
+
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+
+/* ================================
+   SUMMARY CARD STATES
+================================ */
+
+.dashboard-summary-hours strong {
+  letter-spacing: -0.02em;
+}
+
+.dashboard-summary-timer strong {
+  font-size: 20px;
+}
+
+.dashboard-summary-projects strong,
+.dashboard-summary-tasks strong {
+  font-size: 26px;
+}

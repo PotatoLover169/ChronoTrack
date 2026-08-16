@@ -22,24 +22,36 @@ function Dashboard() {
 
       {/* Summary */}
       <section className="dashboard-summary">
-        <div className="dashboard-summary-card">
+        <div className="dashboard-summary-card dashboard-summary-hours">
           <span>Today's Hours</span>
+
           <strong>06h 24m</strong>
+
+          <small>Tracked today</small>
         </div>
 
-        <div className="dashboard-summary-card">
+        <div className="dashboard-summary-card dashboard-summary-timer">
           <span>Current Timer</span>
+
           <strong>Not running</strong>
+
+          <small>Ready to start</small>
         </div>
 
-        <div className="dashboard-summary-card">
+        <div className="dashboard-summary-card dashboard-summary-projects">
           <span>Active Projects</span>
+
           <strong>4</strong>
+
+          <small>Currently in progress</small>
         </div>
 
-        <div className="dashboard-summary-card">
+        <div className="dashboard-summary-card dashboard-summary-tasks">
           <span>Open Tasks</span>
+
           <strong>12</strong>
+
+          <small>Tasks requiring attention</small>
         </div>
       </section>
 
