@@ -81,6 +81,7 @@ function Dashboard() {
 
       {/* Main Dashboard */}
       <section className="dashboard-grid">
+        {/* Recent Activity */}
         <div className="dashboard-panel">
           <div className="dashboard-panel-header">
             <div>
@@ -92,11 +93,58 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="dashboard-panel-empty">
-            No recent activity.
+          <div className="dashboard-activity-list">
+            <div className="dashboard-activity-item">
+              <div className="dashboard-activity-indicator" />
+
+              <div className="dashboard-activity-details">
+                <strong>Website Development</strong>
+
+                <span>Worked on project tasks</span>
+              </div>
+
+              <div className="dashboard-activity-time">
+                <strong>02h 15m</strong>
+
+                <span>Today</span>
+              </div>
+            </div>
+
+            <div className="dashboard-activity-item">
+              <div className="dashboard-activity-indicator" />
+
+              <div className="dashboard-activity-details">
+                <strong>ChronoTrack</strong>
+
+                <span>Backend API development</span>
+              </div>
+
+              <div className="dashboard-activity-time">
+                <strong>01h 42m</strong>
+
+                <span>Yesterday</span>
+              </div>
+            </div>
+
+            <div className="dashboard-activity-item">
+              <div className="dashboard-activity-indicator" />
+
+              <div className="dashboard-activity-details">
+                <strong>Portfolio</strong>
+
+                <span>Frontend improvements</span>
+              </div>
+
+              <div className="dashboard-activity-time">
+                <strong>01h 08m</strong>
+
+                <span>Yesterday</span>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Active Projects */}
         <div className="dashboard-panel">
           <div className="dashboard-panel-header">
             <div>
