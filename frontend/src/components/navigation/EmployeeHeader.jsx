@@ -1,3 +1,5 @@
+import "../../styles/header.css";
+
 function EmployeeHeader() {
   return (
     <header className="employee-header">
