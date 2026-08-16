@@ -55,6 +55,30 @@ function Dashboard() {
         </div>
       </section>
 
+      {/* Current Timer */}
+      <section className="dashboard-timer-panel">
+        <div className="dashboard-timer-content">
+          <div>
+            <p className="dashboard-panel-eyebrow">
+              Time Tracking
+            </p>
+
+            <h3>Current Timer</h3>
+
+            <p className="dashboard-timer-status">
+              No timer is currently running.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="dashboard-timer-button"
+          >
+            Start Timer
+          </button>
+        </div>
+      </section>
+
       {/* Main Dashboard */}
       <section className="dashboard-grid">
         <div className="dashboard-panel">

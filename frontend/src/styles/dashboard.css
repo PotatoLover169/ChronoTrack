@@ -228,3 +228,70 @@
 .dashboard-summary-tasks strong {
   font-size: 26px;
 }
+
+/* ================================
+   CURRENT TIMER
+================================ */
+
+.dashboard-timer-panel {
+  margin-bottom: 24px;
+
+  padding: 22px 24px;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.dashboard-timer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+}
+
+.dashboard-timer-content h3 {
+  margin: 4px 0 6px;
+
+  color: #0f172a;
+
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.dashboard-timer-status {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.dashboard-timer-button {
+  flex-shrink: 0;
+
+  min-height: 38px;
+
+  padding: 0 18px;
+
+  border: 1px solid #2563eb;
+  border-radius: 7px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.dashboard-timer-button:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
