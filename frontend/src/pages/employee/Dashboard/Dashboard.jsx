@@ -156,8 +156,42 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="dashboard-panel-empty">
-            No active projects.
+          <div className="dashboard-project-list">
+            <div className="dashboard-project-item">
+              <div className="dashboard-project-details">
+                <strong>ChronoTrack</strong>
+
+                <span>Time tracking system</span>
+              </div>
+
+              <span className="dashboard-project-status">
+                In Progress
+              </span>
+            </div>
+
+            <div className="dashboard-project-item">
+              <div className="dashboard-project-details">
+                <strong>Portfolio</strong>
+
+                <span>Personal portfolio</span>
+              </div>
+
+              <span className="dashboard-project-status">
+                In Progress
+              </span>
+            </div>
+
+            <div className="dashboard-project-item">
+              <div className="dashboard-project-details">
+                <strong>CTTMO System</strong>
+
+                <span>Traffic management system</span>
+              </div>
+
+              <span className="dashboard-project-status">
+                On Hold
+              </span>
+            </div>
           </div>
         </div>
       </section>

@@ -373,3 +373,70 @@
 
   font-size: 11px;
 }
+
+/* ================================
+   ACTIVE PROJECTS
+================================ */
+
+.dashboard-project-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-project-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding: 16px 0;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dashboard-project-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-project-details {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.dashboard-project-details strong {
+  color: #0f172a;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dashboard-project-details span {
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.dashboard-project-status {
+  flex-shrink: 0;
+
+  padding: 5px 8px;
+
+  border-radius: 5px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dashboard-project-item:last-child .dashboard-project-status {
+  background: #fef3c7;
+  color: #b45309;
+}
