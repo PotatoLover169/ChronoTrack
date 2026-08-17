@@ -177,26 +177,172 @@
 }
 
 
+/* ================================
+   TABLET
+================================ */
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding-bottom: 32px;
+  }
+
+  .dashboard-intro {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-title {
+    font-size: 26px;
+  }
+
+  .dashboard-summary {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-summary-card {
+    padding: 18px;
+  }
+
+  .dashboard-timer-panel {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-grid {
+    gap: 16px;
+  }
+
+  .dashboard-panel {
+    min-height: 260px;
+    padding: 18px;
+  }
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
 @media (max-width: 640px) {
   .dashboard-page {
     padding-bottom: 28px;
+  }
+
+  .dashboard-intro {
+    margin-bottom: 20px;
   }
 
   .dashboard-title {
     font-size: 24px;
   }
 
+  .dashboard-description {
+    font-size: 13px;
+  }
+
   .dashboard-summary {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 16px;
   }
 
   .dashboard-summary-card {
     padding: 16px;
+    gap: 8px;
+  }
+
+  .dashboard-summary-card strong {
+    font-size: 22px;
+  }
+
+  .dashboard-summary-projects strong,
+  .dashboard-summary-tasks strong {
+    font-size: 24px;
+  }
+
+  .dashboard-summary-timer strong {
+    font-size: 19px;
+  }
+
+
+  /* Timer */
+
+  .dashboard-timer-panel {
+    margin-bottom: 16px;
+    padding: 18px;
+  }
+
+  .dashboard-timer-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .dashboard-timer-content h3 {
+    font-size: 17px;
+  }
+
+  .dashboard-timer-button {
+    width: 100%;
+  }
+
+
+  /* Main panels */
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .dashboard-panel {
+    min-height: 0;
     padding: 16px;
+  }
+
+
+  /* Recent activity */
+
+  .dashboard-activity-item {
+    grid-template-columns: 7px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .dashboard-activity-details strong {
+    font-size: 12px;
+  }
+
+  .dashboard-activity-details span {
+    font-size: 11px;
+  }
+
+  .dashboard-activity-time strong {
+    font-size: 12px;
+  }
+
+  .dashboard-activity-time span {
+    font-size: 10px;
+  }
+
+
+  /* Active projects */
+
+  .dashboard-project-item {
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .dashboard-project-details strong {
+    font-size: 12px;
+  }
+
+  .dashboard-project-details span {
+    font-size: 11px;
+  }
+
+  .dashboard-project-status {
+    padding: 4px 7px;
+    font-size: 9px;
   }
 }
 

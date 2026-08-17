@@ -2,9 +2,15 @@ import { NavLink } from "react-router-dom";
 
 import "../../styles/sidebar.css";
 
-function Sidebar() {
+function Sidebar({ isOpen, onClose }) {
+  const handleNavigation = () => {
+    if (window.innerWidth <= 768) {
+      onClose();
+    }
+  };
+
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
       {/* Brand */}
       <div className="sidebar-brand">
         <div className="sidebar-brand-mark">
@@ -32,6 +38,7 @@ function Sidebar() {
 
           <NavLink
             to="/"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -54,6 +61,7 @@ function Sidebar() {
 
           <NavLink
             to="/projects"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -69,6 +77,7 @@ function Sidebar() {
 
           <NavLink
             to="/tasks"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -84,6 +93,7 @@ function Sidebar() {
 
           <NavLink
             to="/time-tracking"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -106,6 +116,7 @@ function Sidebar() {
 
           <NavLink
             to="/reports"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -128,6 +139,7 @@ function Sidebar() {
 
           <NavLink
             to="/clients"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -143,6 +155,7 @@ function Sidebar() {
 
           <NavLink
             to="/leave"
+            onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
                 isActive ? "sidebar-link-active" : ""
@@ -162,6 +175,7 @@ function Sidebar() {
       <div className="sidebar-bottom">
         <NavLink
           to="/settings"
+          onClick={handleNavigation}
           className={({ isActive }) =>
             `sidebar-link ${
               isActive ? "sidebar-link-active" : ""

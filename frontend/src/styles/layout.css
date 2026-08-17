@@ -18,13 +18,85 @@
 
 .employee-main {
   width: calc(100% - 250px);
+
   min-width: 0;
   min-height: 100dvh;
 
   margin-left: 250px;
 
   box-sizing: border-box;
+
   padding: 32px;
 
   color: #18181b;
+}
+
+
+/* ================================
+   TABLET
+================================ */
+
+@media (max-width: 1100px) {
+
+  .employee-main {
+    width: calc(100% - 220px);
+
+    margin-left: 220px;
+
+    padding: 28px;
+  }
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 768px) {
+
+  .employee-main {
+    width: calc(100% - 72px);
+
+    margin-left: 72px;
+
+    padding: 20px;
+  }
+}
+
+
+/* ================================
+   SMALL MOBILE
+================================ */
+
+@media (max-width: 480px) {
+
+  .employee-main {
+    width: calc(100% - 64px);
+
+    margin-left: 64px;
+
+    padding: 16px;
+  }
+}
+
+/* ================================
+   MOBILE EMPLOYEE LAYOUT
+================================ */
+
+@media (max-width: 768px) {
+
+  .employee-main {
+    width: 100%;
+    min-width: 0;
+
+    margin-left: 0;
+
+    padding: 72px 16px 24px;
+  }
+
+
+  .employee-content {
+    width: 100%;
+    min-width: 0;
+  }
 }
