@@ -1,6 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 
 import EmployeeLayout from "../layouts/EmployeeLayout";
+
+import Login from "../pages/auth/Login/Login";
+
 import Dashboard from "../pages/employee/Dashboard/Dashboard";
 import Projects from "../pages/employee/Projects/Projects";
 import Tasks from "../pages/employee/Tasks/Tasks";
@@ -12,6 +15,7 @@ import Leave from "../pages/employee/Leave/Leave";
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
       <Route element={<EmployeeLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
