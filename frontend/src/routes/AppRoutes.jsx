@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 
 import EmployeeLayout from "../layouts/EmployeeLayout";
+import ProtectedRoute from "./ProtectedRoute";
 
 import Login from "../pages/auth/Login/Login";
 
@@ -15,16 +16,55 @@ import Leave from "../pages/employee/Leave/Leave";
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route element={<EmployeeLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/time-tracking" element={<TimeTracking />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/clients" element={<Clients />} />
-        <Route path="/leave" element={<Leave />} />
+
+      {/* Authentication */}
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      {/* Protected Employee Application */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<EmployeeLayout />}>
+
+          <Route
+            path="/"
+            element={<Dashboard />}
+          />
+
+          <Route
+            path="/projects"
+            element={<Projects />}
+          />
+
+          <Route
+            path="/tasks"
+            element={<Tasks />}
+          />
+
+          <Route
+            path="/time-tracking"
+            element={<TimeTracking />}
+          />
+
+          <Route
+            path="/reports"
+            element={<Reports />}
+          />
+
+          <Route
+            path="/clients"
+            element={<Clients />}
+          />
+
+          <Route
+            path="/leave"
+            element={<Leave />}
+          />
+
+        </Route>
       </Route>
+
     </Routes>
   );
 }
