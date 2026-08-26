@@ -586,3 +586,88 @@
   background: #fef3c7;
   color: #b45309;
 }
+
+/* ================================
+   DASHBOARD TIMER CONTROLS
+================================ */
+
+.dashboard-timer-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-timer-controls select,
+.dashboard-timer-controls input {
+  min-height: 38px;
+  box-sizing: border-box;
+
+  padding: 0 11px;
+
+  border: 1px solid #d4d4d8;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #18181b;
+
+  font-size: 12px;
+  outline: none;
+}
+
+.dashboard-timer-controls select {
+  min-width: 170px;
+}
+
+.dashboard-timer-controls input {
+  width: 220px;
+}
+
+.dashboard-timer-controls select:focus,
+.dashboard-timer-controls input:focus {
+  border-color: #2563eb;
+}
+
+.dashboard-timer-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.dashboard-error {
+  margin-bottom: 20px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 12px;
+}
+
+/* ================================
+   RESPONSIVE TIMER CONTROLS
+================================ */
+
+@media (max-width: 900px) {
+  .dashboard-timer-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-timer-controls select,
+  .dashboard-timer-controls input {
+    width: 100%;
+  }
+
+  .dashboard-timer-controls .dashboard-timer-button {
+    width: 100%;
+  }
+
+  .dashboard-timer-content {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

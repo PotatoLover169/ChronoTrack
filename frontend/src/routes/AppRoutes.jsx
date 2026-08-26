@@ -1,8 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 
+import EmployeeLayout from "../layouts/EmployeeLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
-import EmployeeLayout from "../layouts/EmployeeLayout";
+import Login from "../pages/auth/Login/Login";
 
 import Dashboard from "../pages/employee/Dashboard/Dashboard";
 import Projects from "../pages/employee/Projects/Projects";
@@ -12,19 +13,17 @@ import Reports from "../pages/employee/Reports/Reports";
 import Clients from "../pages/employee/Clients/Clients";
 import Leave from "../pages/employee/Leave/Leave";
 
-import Login from "../pages/auth/Login/Login";
-
 function AppRoutes() {
   return (
     <Routes>
 
-      {/* Public Routes */}
+      {/* Authentication */}
       <Route
         path="/login"
         element={<Login />}
       />
 
-      {/* Protected Employee Routes */}
+      {/* Protected Employee Application */}
       <Route element={<ProtectedRoute />}>
         <Route element={<EmployeeLayout />}>
 
