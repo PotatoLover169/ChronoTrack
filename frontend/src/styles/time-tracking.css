@@ -1,0 +1,203 @@
+.time-tracking-page {
+  padding: 32px;
+}
+
+.time-tracking-header {
+  margin-bottom: 24px;
+}
+
+.time-tracking-header h1 {
+  margin: 4px 0 8px;
+  font-size: 30px;
+}
+
+.time-tracking-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.time-tracking-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card-heading h2 {
+  margin: 4px 0 0;
+  font-size: 20px;
+}
+
+.section-label {
+  margin: 0;
+  font-size: 12px !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b !important;
+}
+
+.timer-status {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.timer-status.running {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.current-timer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.timer-project {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.timer-task,
+.timer-description,
+.timer-start {
+  margin: 4px 0;
+  color: #64748b;
+}
+
+.start-timer-button,
+.stop-timer-button {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.start-timer-button {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.stop-timer-button {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.start-timer-button:disabled,
+.stop-timer-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.timer-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 14px;
+}
+
+.time-entry-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.time-entry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.time-entry-row h3 {
+  margin: 0 0 5px;
+  font-size: 15px;
+}
+
+.time-entry-row p {
+  margin: 0 0 5px;
+  color: #64748b;
+}
+
+.time-entry-row span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.time-entry-duration {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.empty-message {
+  margin: 0;
+  color: #64748b;
+}
+
+.time-tracking-error {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 800px) {
+  .time-tracking-page {
+    padding: 20px;
+  }
+
+  .timer-form {
+    grid-template-columns: 1fr;
+  }
+
+  .current-timer-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .time-entry-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
