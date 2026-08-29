@@ -28,6 +28,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
     class Meta:
         model = User
 
@@ -35,10 +37,24 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "role",
         )
+
+    def get_role(self, obj):
+        if obj.is_superuser:
+            return "Admin"
+
+        group = obj.groups.first()
+
+        if group:
+            return group.name
+
+        return "Employee"
 
 
 class UserSummarySerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
     class Meta:
         model = User
 
@@ -47,7 +63,20 @@ class UserSummarySerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "role",
         )
+
+    def get_role(self, obj):
+        if obj.is_superuser:
+            return "Admin"
+
+        group = obj.groups.first()
+
+        if group:
+            return group.name
+
+        return "Employee"
+
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
