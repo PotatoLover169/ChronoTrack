@@ -30,6 +30,7 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Navigation */}
       <nav className="sidebar-nav">
+
         {/* Overview */}
         <div className="sidebar-section">
           <p className="sidebar-section-label">
@@ -59,22 +60,7 @@ function Sidebar({ isOpen, onClose }) {
             Workspace
           </p>
 
-          <NavLink
-            to="/projects"
-            onClick={handleNavigation}
-            className={({ isActive }) =>
-              `sidebar-link ${
-                isActive ? "sidebar-link-active" : ""
-              }`
-            }
-          >
-            <span className="sidebar-link-icon">
-              ◇
-            </span>
-
-            <span>Projects</span>
-          </NavLink>
-
+          {/* Tasks */}
           <NavLink
             to="/tasks"
             onClick={handleNavigation}
@@ -91,6 +77,7 @@ function Sidebar({ isOpen, onClose }) {
             <span>Tasks</span>
           </NavLink>
 
+          {/* Time Tracking */}
           <NavLink
             to="/time-tracking"
             onClick={handleNavigation}
@@ -169,6 +156,7 @@ function Sidebar({ isOpen, onClose }) {
             <span>Leave</span>
           </NavLink>
         </div>
+
       </nav>
 
       {/* Bottom Navigation */}

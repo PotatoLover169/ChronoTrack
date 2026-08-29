@@ -1,5 +1,6 @@
+from django.db import models
+
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 
 from apps.notifications.services import (
     notify_project_created,
@@ -7,6 +8,7 @@ from apps.notifications.services import (
 )
 from apps.projects.models import Project
 
+from .permissions import ProjectPermission
 from .serializers import ProjectSerializer
 
 
@@ -14,12 +16,13 @@ class ProjectListCreateAPIView(
     generics.ListCreateAPIView,
 ):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ProjectPermission]
 
     def get_queryset(self):
         return Project.objects.filter(
-            owner=self.request.user,
-        )
+            models.Q(owner=self.request.user)
+            | models.Q(members=self.request.user)
+        ).distinct()
 
     def perform_create(
         self,
@@ -39,12 +42,13 @@ class ProjectRetrieveUpdateDestroyAPIView(
     generics.RetrieveUpdateDestroyAPIView,
 ):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ProjectPermission]
 
     def get_queryset(self):
         return Project.objects.filter(
-            owner=self.request.user,
-        )
+            models.Q(owner=self.request.user)
+            | models.Q(members=self.request.user)
+        ).distinct()
 
     def perform_update(
         self,

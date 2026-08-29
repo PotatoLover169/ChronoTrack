@@ -19,15 +19,25 @@ class Project(models.Model):
         related_name="projects",
     )
 
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="assigned_projects",
+        blank=True,
+    )
+
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
         related_name="projects",
     )
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(
+        max_length=200,
+    )
 
-    description = models.TextField(blank=True)
+    description = models.TextField(
+        blank=True,
+    )
 
     status = models.CharField(
         max_length=20,
