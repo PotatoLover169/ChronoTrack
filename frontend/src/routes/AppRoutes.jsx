@@ -1,7 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 
 import EmployeeLayout from "../layouts/EmployeeLayout";
+
 import ProtectedRoute from "./ProtectedRoute";
+import RoleRoute from "./RoleRoute";
 
 import Login from "../pages/auth/Login/Login";
 
@@ -23,20 +25,32 @@ function AppRoutes() {
         element={<Login />}
       />
 
-      {/* Protected Employee Application */}
+      {/* Protected Application */}
       <Route element={<ProtectedRoute />}>
+
         <Route element={<EmployeeLayout />}>
 
+          {/* Dashboard */}
           <Route
             path="/"
             element={<Dashboard />}
           />
 
+          {/* Manager / Admin only */}
           <Route
-            path="/projects"
-            element={<Projects />}
-          />
+            element={
+              <RoleRoute
+                allowedRoles={["Manager", "Admin"]}
+              />
+            }
+          >
+            <Route
+              path="/projects"
+              element={<Projects />}
+            />
+          </Route>
 
+          {/* Employee accessible */}
           <Route
             path="/tasks"
             element={<Tasks />}
@@ -63,6 +77,7 @@ function AppRoutes() {
           />
 
         </Route>
+
       </Route>
 
     </Routes>
