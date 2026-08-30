@@ -15,28 +15,90 @@ import Reports from "../pages/employee/Reports/Reports";
 import Clients from "../pages/employee/Clients/Clients";
 import Leave from "../pages/employee/Leave/Leave";
 
+import ManagerDashboard from "../pages/manager/Dashboard/Dashboard";
+import AdminDashboard from "../pages/admin/Dashboard/Dashboard";
+
 function AppRoutes() {
   return (
     <Routes>
 
-      {/* Authentication */}
+      {/* ================================
+          AUTHENTICATION
+      ================================= */}
+
       <Route
         path="/login"
         element={<Login />}
       />
 
-      {/* Protected Application */}
+
+      {/* ================================
+          PROTECTED APPLICATION
+      ================================= */}
+
       <Route element={<ProtectedRoute />}>
 
         <Route element={<EmployeeLayout />}>
 
-          {/* Dashboard */}
-          <Route
-            path="/"
-            element={<Dashboard />}
-          />
+          {/* ================================
+              EMPLOYEE DASHBOARD
+          ================================= */}
 
-          {/* Manager / Admin only */}
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={["Employee"]}
+              />
+            }
+          >
+            <Route
+              path="/"
+              element={<Dashboard />}
+            />
+          </Route>
+
+
+          {/* ================================
+              MANAGER DASHBOARD
+          ================================= */}
+
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={["Manager"]}
+              />
+            }
+          >
+            <Route
+              path="/manager"
+              element={<ManagerDashboard />}
+            />
+          </Route>
+
+
+          {/* ================================
+              ADMIN DASHBOARD
+          ================================= */}
+
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={["Admin"]}
+              />
+            }
+          >
+            <Route
+              path="/admin"
+              element={<AdminDashboard />}
+            />
+          </Route>
+
+
+          {/* ================================
+              PROJECTS
+              Manager + Admin only
+          ================================= */}
+
           <Route
             element={
               <RoleRoute
@@ -50,7 +112,11 @@ function AppRoutes() {
             />
           </Route>
 
-          {/* Employee accessible */}
+
+          {/* ================================
+              EMPLOYEE ACCESSIBLE PAGES
+          ================================= */}
+
           <Route
             path="/tasks"
             element={<Tasks />}
