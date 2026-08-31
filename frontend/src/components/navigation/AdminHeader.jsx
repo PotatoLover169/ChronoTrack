@@ -1,33 +1,27 @@
-import useAuth from "../../hooks/useAuth";
-
 import "../../styles/header.css";
 
-function EmployeeHeader() {
-  const { user } = useAuth();
-
-  const role = user?.role || "Employee";
-
+function AdminHeader() {
   return (
     <header className="employee-header">
       <div className="employee-header-left">
         <div>
           <p className="employee-header-eyebrow">
-            Workspace
+            Organization
           </p>
 
           <h1 className="employee-header-title">
-            Dashboard
+            Admin Dashboard
           </h1>
         </div>
       </div>
 
       <div className="employee-header-right">
         <span className="employee-header-status">
-          {role}
+          Admin
         </span>
       </div>
     </header>
   );
 }
 
-export default EmployeeHeader;
+export default AdminHeader;

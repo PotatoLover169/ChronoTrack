@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import EmployeeSidebar from "../components/navigation/EmployeeSidebar";
-import EmployeeHeader from "../components/navigation/EmployeeHeader";
+import AdminSidebar from "../components/navigation/AdminSidebar";
+import AdminHeader from "../components/navigation/AdminHeader";
 
 import "../styles/sidebar.css";
 import "../styles/layout.css";
 
-function EmployeeLayout() {
+function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -34,25 +34,21 @@ function EmployeeLayout() {
         />
       )}
 
-      {/* Employee Sidebar */}
-      <EmployeeSidebar
+      <AdminSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content */}
       <main className="employee-main">
-
-        <EmployeeHeader />
+        <AdminHeader />
 
         <section className="employee-content">
           <Outlet />
         </section>
-
       </main>
 
     </div>
   );
 }
 
-export default EmployeeLayout;
+export default AdminLayout;

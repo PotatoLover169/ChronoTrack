@@ -1,12 +1,6 @@
-import useAuth from "../../hooks/useAuth";
-
 import "../../styles/header.css";
 
-function EmployeeHeader() {
-  const { user } = useAuth();
-
-  const role = user?.role || "Employee";
-
+function ManagerHeader() {
   return (
     <header className="employee-header">
       <div className="employee-header-left">
@@ -16,18 +10,18 @@ function EmployeeHeader() {
           </p>
 
           <h1 className="employee-header-title">
-            Dashboard
+            Manager Dashboard
           </h1>
         </div>
       </div>
 
       <div className="employee-header-right">
         <span className="employee-header-status">
-          {role}
+          Manager
         </span>
       </div>
     </header>
   );
 }
 
-export default EmployeeHeader;
+export default ManagerHeader;

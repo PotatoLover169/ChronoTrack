@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import EmployeeSidebar from "../components/navigation/EmployeeSidebar";
-import EmployeeHeader from "../components/navigation/EmployeeHeader";
+import ManagerSidebar from "../components/navigation/ManagerSidebar";
+import ManagerHeader from "../components/navigation/ManagerHeader";
 
 import "../styles/sidebar.css";
 import "../styles/layout.css";
 
-function EmployeeLayout() {
+function ManagerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -34,25 +34,21 @@ function EmployeeLayout() {
         />
       )}
 
-      {/* Employee Sidebar */}
-      <EmployeeSidebar
+      <ManagerSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content */}
       <main className="employee-main">
-
-        <EmployeeHeader />
+        <ManagerHeader />
 
         <section className="employee-content">
           <Outlet />
         </section>
-
       </main>
 
     </div>
   );
 }
 
-export default EmployeeLayout;
+export default ManagerLayout;

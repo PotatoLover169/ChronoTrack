@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 import "../../styles/sidebar.css";
 
-function Sidebar({ isOpen, onClose }) {
+function EmployeeSidebar({ isOpen, onClose }) {
   const handleNavigation = () => {
     if (window.innerWidth <= 768) {
       onClose();
@@ -181,4 +181,4 @@ function Sidebar({ isOpen, onClose }) {
   );
 }
 
-export default Sidebar;
+export default EmployeeSidebar;

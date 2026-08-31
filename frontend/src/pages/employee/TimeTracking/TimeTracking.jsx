@@ -110,9 +110,15 @@ function TimeTracking() {
     return (
       <section className="time-tracking-page">
         <div className="time-tracking-header">
-          <p className="section-label">TIME TRACKING</p>
+          <p className="section-label">
+            TIME TRACKING
+          </p>
+
           <h1>Time Tracking</h1>
-          <p>Track and manage your working hours.</p>
+
+          <p>
+            Track and manage your working hours.
+          </p>
         </div>
 
         <div className="time-tracking-card">
@@ -124,9 +130,12 @@ function TimeTracking() {
 
   return (
     <section className="time-tracking-page">
+      {/* Page Header */}
       <div className="time-tracking-header">
         <div>
-          <p className="section-label">TIME TRACKING</p>
+          <p className="section-label">
+            TIME TRACKING
+          </p>
 
           <h1>Time Tracking</h1>
 
@@ -136,6 +145,7 @@ function TimeTracking() {
         </div>
       </div>
 
+      {/* Error */}
       {error && (
         <div className="time-tracking-error">
           {error}
@@ -171,22 +181,30 @@ function TimeTracking() {
         {currentTimer ? (
           <div className="current-timer-content">
             <div>
+              {/* Project */}
               <p className="timer-project">
-                Project #{currentTimer.project}
+                {currentTimer.project?.name ||
+                  `Project #${currentTimer.project?.id || currentTimer.project}`}
               </p>
 
+              {/* Task */}
               {currentTimer.task && (
                 <p className="timer-task">
-                  Task #{currentTimer.task}
+                  {typeof currentTimer.task === "object"
+                    ? currentTimer.task.name ||
+                      `Task #${currentTimer.task.id}`
+                    : `Task #${currentTimer.task}`}
                 </p>
               )}
 
+              {/* Description */}
               {currentTimer.description && (
                 <p className="timer-description">
                   {currentTimer.description}
                 </p>
               )}
 
+              {/* Start Time */}
               <p className="timer-start">
                 Started:{" "}
                 {new Date(
@@ -230,6 +248,7 @@ function TimeTracking() {
             className="timer-form"
             onSubmit={handleStartTimer}
           >
+            {/* Project */}
             <div className="form-field">
               <label htmlFor="project">
                 Project
@@ -260,6 +279,7 @@ function TimeTracking() {
               </select>
             </div>
 
+            {/* Description */}
             <div className="form-field">
               <label htmlFor="description">
                 Description
@@ -276,6 +296,7 @@ function TimeTracking() {
               />
             </div>
 
+            {/* Start Button */}
             <button
               type="submit"
               className="start-timer-button"
@@ -315,11 +336,13 @@ function TimeTracking() {
                 <div>
                   <h3>
                     {entry.project?.name ||
-                      `Project #${entry.project}`}
+                      `Project #${entry.project?.id || entry.project}`}
                   </h3>
 
                   {entry.description && (
-                    <p>{entry.description}</p>
+                    <p>
+                      {entry.description}
+                    </p>
                   )}
 
                   <span>
