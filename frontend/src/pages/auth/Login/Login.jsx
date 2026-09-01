@@ -22,13 +22,28 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      await login(username, password);
+      const loggedInUser = await login(username, password);
 
-      navigate("/");
+      /*
+       * Redirect the user based on their role.
+       *
+       * Employee -> /
+       * Manager  -> /manager
+       * Admin    -> /admin
+       */
+
+      if (loggedInUser?.role === "Admin") {
+        navigate("/admin", { replace: true });
+      } else if (loggedInUser?.role === "Manager") {
+        navigate("/manager", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+
     } catch (error) {
       setError(
         error.response?.data?.detail ||
-        "Invalid username or password."
+          "Invalid username or password."
       );
     } finally {
       setIsSubmitting(false);
@@ -38,6 +53,8 @@ function Login() {
   return (
     <main className="login-page">
       <section className="login-card">
+
+        {/* Brand */}
         <div className="login-brand">
           <div className="login-brand-mark">
             CT
@@ -49,22 +66,28 @@ function Login() {
           </div>
         </div>
 
+        {/* Header */}
         <div className="login-header">
           <p className="login-eyebrow">
             Welcome back
           </p>
 
-          <h2>Sign in to your account</h2>
+          <h2>
+            Sign in to your account
+          </h2>
 
           <p>
             Enter your credentials to continue to ChronoTrack.
           </p>
         </div>
 
+        {/* Login Form */}
         <form
           className="login-form"
           onSubmit={handleSubmit}
         >
+
+          {/* Username */}
           <div className="login-field">
             <label htmlFor="username">
               Username
@@ -83,6 +106,7 @@ function Login() {
             />
           </div>
 
+          {/* Password */}
           <div className="login-field">
             <label htmlFor="password">
               Password
@@ -101,12 +125,14 @@ function Login() {
             />
           </div>
 
+          {/* Error */}
           {error && (
             <p className="login-error">
               {error}
             </p>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
             className="login-button"
@@ -116,11 +142,14 @@ function Login() {
               ? "Signing in..."
               : "Sign In"}
           </button>
+
         </form>
 
+        {/* Footer */}
         <p className="login-footer">
           ChronoTrack · Time & Productivity Management
         </p>
+
       </section>
     </main>
   );
