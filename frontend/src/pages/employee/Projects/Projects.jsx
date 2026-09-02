@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 
 import api from "../../../services/api";
+import useAuth from "../../../hooks/useAuth";
 
 import "../../../styles/projects.css";
 
 function Projects() {
+  const { user } = useAuth();
+
+  const canManageProjects =
+    user?.role === "Manager" || user?.role === "Admin";
+
   const [projects, setProjects] = useState([]);
 
   const [name, setName] = useState("");
@@ -40,6 +46,10 @@ function Projects() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!canManageProjects) {
+      return;
+    }
 
     setError("");
     setIsSubmitting(true);
@@ -101,119 +111,121 @@ function Projects() {
       )}
 
       {/* Create Project */}
-      <div className="projects-card">
-        <div className="card-heading">
-          <div>
-            <p className="section-label">
-              NEW PROJECT
-            </p>
+      {canManageProjects && (
+        <div className="projects-card">
+          <div className="card-heading">
+            <div>
+              <p className="section-label">
+                NEW PROJECT
+              </p>
 
-            <h2>Create a project</h2>
-          </div>
-        </div>
-
-        <form
-          className="project-form"
-          onSubmit={handleSubmit}
-        >
-          <div className="form-field">
-            <label htmlFor="project-name">
-              Project Name
-            </label>
-
-            <input
-              id="project-name"
-              type="text"
-              value={name}
-              onChange={(event) =>
-                setName(event.target.value)
-              }
-              placeholder="Enter project name"
-              required
-            />
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="project-description">
-              Description
-            </label>
-
-            <textarea
-              id="project-description"
-              value={description}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
-              placeholder="Describe the project"
-              rows="3"
-            />
-          </div>
-
-          <div className="project-form-row">
-            <div className="form-field">
-              <label htmlFor="project-status">
-                Status
-              </label>
-
-              <select
-                id="project-status"
-                value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value)
-                }
-              >
-                <option value="planning">
-                  Planning
-                </option>
-
-                <option value="in_progress">
-                  In Progress
-                </option>
-
-                <option value="on_hold">
-                  On Hold
-                </option>
-
-                <option value="completed">
-                  Completed
-                </option>
-
-                <option value="cancelled">
-                  Cancelled
-                </option>
-              </select>
+              <h2>Create a project</h2>
             </div>
+          </div>
 
+          <form
+            className="project-form"
+            onSubmit={handleSubmit}
+          >
             <div className="form-field">
-              <label htmlFor="hourly-rate">
-                Hourly Rate
+              <label htmlFor="project-name">
+                Project Name
               </label>
 
               <input
-                id="hourly-rate"
-                type="number"
-                min="0"
-                step="0.01"
-                value={hourlyRate}
+                id="project-name"
+                type="text"
+                value={name}
                 onChange={(event) =>
-                  setHourlyRate(event.target.value)
+                  setName(event.target.value)
                 }
-                placeholder="0.00"
+                placeholder="Enter project name"
+                required
               />
             </div>
-          </div>
 
-          <button
-            type="submit"
-            className="create-project-button"
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? "Creating..."
-              : "Create Project"}
-          </button>
-        </form>
-      </div>
+            <div className="form-field">
+              <label htmlFor="project-description">
+                Description
+              </label>
+
+              <textarea
+                id="project-description"
+                value={description}
+                onChange={(event) =>
+                  setDescription(event.target.value)
+                }
+                placeholder="Describe the project"
+                rows="3"
+              />
+            </div>
+
+            <div className="project-form-row">
+              <div className="form-field">
+                <label htmlFor="project-status">
+                  Status
+                </label>
+
+                <select
+                  id="project-status"
+                  value={status}
+                  onChange={(event) =>
+                    setStatus(event.target.value)
+                  }
+                >
+                  <option value="planning">
+                    Planning
+                  </option>
+
+                  <option value="in_progress">
+                    In Progress
+                  </option>
+
+                  <option value="on_hold">
+                    On Hold
+                  </option>
+
+                  <option value="completed">
+                    Completed
+                  </option>
+
+                  <option value="cancelled">
+                    Cancelled
+                  </option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="hourly-rate">
+                  Hourly Rate
+                </label>
+
+                <input
+                  id="hourly-rate"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={hourlyRate}
+                  onChange={(event) =>
+                    setHourlyRate(event.target.value)
+                  }
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="create-project-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? "Creating..."
+                : "Create Project"}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Project List */}
       <div className="projects-card">
@@ -233,8 +245,9 @@ function Projects() {
           </p>
         ) : projects.length === 0 ? (
           <p className="empty-message">
-            No projects found. Create your first
-            project above.
+            {canManageProjects
+              ? "No projects found. Create your first project above."
+              : "No projects have been assigned to you yet."}
           </p>
         ) : (
           <div className="project-list">
@@ -250,12 +263,14 @@ function Projects() {
                     <p>{project.description}</p>
                   )}
 
-                  <span>
-                    Created{" "}
-                    {new Date(
-                      project.created_at
-                    ).toLocaleDateString()}
-                  </span>
+                  {project.created_at && (
+                    <span>
+                      Created{" "}
+                      {new Date(
+                        project.created_at
+                      ).toLocaleDateString()}
+                    </span>
+                  )}
                 </div>
 
                 <div className="project-meta">
