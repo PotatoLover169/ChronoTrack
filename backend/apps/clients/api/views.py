@@ -3,17 +3,21 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.clients.models import Client
-
-from apps.clients.services import (
-    get_client_dashboard,
-)
+from apps.clients.services import get_client_dashboard
 
 from .serializers import (
     ClientSerializer,
     ClientDashboardSerializer,
 )
 
-from .serializers import ClientSerializer
+
+def is_manager_or_admin(user):
+    return (
+        user.is_superuser
+        or user.groups.filter(
+            name__in=["Admin", "Manager"]
+        ).exists()
+    )
 
 
 class ClientListCreateAPIView(generics.ListCreateAPIView):
@@ -21,10 +25,19 @@ class ClientListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Client.objects.filter(owner=self.request.user)
+        user = self.request.user
+
+        if is_manager_or_admin(user):
+            return Client.objects.all()
+
+        return Client.objects.filter(
+            owner=user
+        )
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(
+            owner=self.request.user
+        )
 
 
 class ClientRetrieveUpdateDestroyAPIView(
@@ -34,7 +47,15 @@ class ClientRetrieveUpdateDestroyAPIView(
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Client.objects.filter(owner=self.request.user)
+        user = self.request.user
+
+        if is_manager_or_admin(user):
+            return Client.objects.all()
+
+        return Client.objects.filter(
+            owner=user
+        )
+
 
 class ClientDashboardAPIView(
     generics.GenericAPIView,
@@ -44,9 +65,7 @@ class ClientDashboardAPIView(
     for a specific client.
     """
 
-    serializer_class = (
-        ClientDashboardSerializer
-    )
+    serializer_class = ClientDashboardSerializer
 
     permission_classes = [
         IsAuthenticated,

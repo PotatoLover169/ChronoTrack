@@ -7,21 +7,13 @@ from apps.projects.models import Project
 class ClientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = (
-            "id",
-            "name",
-        )
+        fields = ("id", "name")
 
 
 class ProjectSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = (
-            "id",
-            "name",
-            "status",
-            "hourly_rate",
-        )
+        fields = ("id", "name", "status", "hourly_rate")
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -63,7 +55,24 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         request = self.context.get("request")
 
-        if request and request.user.is_authenticated:
+        if not request or not request.user.is_authenticated:
+            return
+
+        user = request.user
+
+        # Managers and Admins can select any client
+        if (
+            user.is_superuser
+            or user.groups.filter(
+                name__in=["Admin", "Manager"]
+            ).exists()
+        ):
+            self.fields["client_id"].queryset = Client.objects.all()
+
+        # Employees can only select clients they own.
+        # Employees should normally not create projects,
+        # so this is mainly a safety fallback.
+        else:
             self.fields["client_id"].queryset = Client.objects.filter(
-                owner=request.user
+                owner=user
             )
