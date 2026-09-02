@@ -43,6 +43,7 @@ function AdminSidebar({ isOpen, onClose }) {
 
           <NavLink
             to="/admin"
+            end
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
@@ -67,7 +68,7 @@ function AdminSidebar({ isOpen, onClose }) {
           </p>
 
           <NavLink
-            to="/projects"
+            to="/admin/projects"
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
@@ -85,7 +86,7 @@ function AdminSidebar({ isOpen, onClose }) {
           </NavLink>
 
           <NavLink
-            to="/tasks"
+            to="/admin/tasks"
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
@@ -103,7 +104,7 @@ function AdminSidebar({ isOpen, onClose }) {
           </NavLink>
 
           <NavLink
-            to="/clients"
+            to="/admin/clients"
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
@@ -128,7 +129,7 @@ function AdminSidebar({ isOpen, onClose }) {
           </p>
 
           <NavLink
-            to="/reports"
+            to="/admin/reports"
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
@@ -146,7 +147,7 @@ function AdminSidebar({ isOpen, onClose }) {
           </NavLink>
 
           <NavLink
-            to="/time-tracking"
+            to="/admin/time-tracking"
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
@@ -171,7 +172,7 @@ function AdminSidebar({ isOpen, onClose }) {
           </p>
 
           <NavLink
-            to="/leave"
+            to="/admin/leave"
             onClick={handleNavigation}
             className={({ isActive }) =>
               `sidebar-link ${
