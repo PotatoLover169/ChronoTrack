@@ -23,6 +23,14 @@ class Task(models.Model):
         related_name="tasks",
     )
 
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="assigned_tasks",
+        null=True,
+        blank=True,
+    )
+
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
