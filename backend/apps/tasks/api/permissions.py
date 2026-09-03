@@ -31,25 +31,40 @@ class TaskPermission(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        # Everyone authenticated can access the endpoint.
-        # Object-level rules below determine what an Employee
-        # can actually access.
-        return True
+        # Managers and Admins have full task permissions.
+        if self._is_manager_or_admin(user):
+            return True
+
+        # Employees can view tasks.
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+
+        # Allow detail-level modification requests to reach
+        # has_object_permission(), where ownership/assignment
+        # is checked.
+        if request.method in ["PATCH", "PUT", "DELETE"]:
+            return True
+
+        # Employees cannot create tasks.
+        if request.method == "POST":
+            return False
+
+        return False
 
     def has_object_permission(self, request, view, obj):
         user = request.user
 
-        # Manager/Admin can manage every task.
+        # Managers and Admins have full access.
         if self._is_manager_or_admin(user):
             return True
 
-        # Employee can only access tasks assigned to them.
+        # Employees can only access tasks assigned to them.
         if obj.assigned_to_id != user.id:
             return False
 
-        # Employee can view/update assigned tasks.
+        # Employees can view and update their assigned tasks.
         if request.method in ["GET", "HEAD", "OPTIONS", "PATCH", "PUT"]:
             return True
 
-        # Employee cannot delete assigned tasks.
+        # Employees cannot delete tasks.
         return False
