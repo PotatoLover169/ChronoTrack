@@ -1,7 +1,8 @@
-from rest_framework import status
+from django.core.exceptions import ValidationError
+
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import generics
 from rest_framework.views import APIView
 
 from .serializers import (
@@ -20,6 +21,7 @@ from ..exceptions import (
     NoRunningTimerError,
     TimerAlreadyRunningError,
 )
+
 
 class StartTimerView(APIView):
     permission_classes = [IsAuthenticated]
@@ -47,6 +49,12 @@ class StartTimerView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        except ValidationError as exc:
+            return Response(
+                exc.message_dict,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         return Response(
             {
                 "message": "Timer started successfully.",
@@ -54,6 +62,7 @@ class StartTimerView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
 
 class StopTimerView(APIView):
     permission_classes = [IsAuthenticated]
@@ -81,6 +90,7 @@ class StopTimerView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 class CurrentTimerView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -106,6 +116,7 @@ class CurrentTimerView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 class TimeEntryListView(generics.ListAPIView):
     """
     Return all time entries for the authenticated user.
@@ -123,6 +134,7 @@ class TimeEntryListView(generics.ListAPIView):
             )
             .order_by("-start_time")
         )
+
 
 class TimeEntryDetailView(generics.RetrieveAPIView):
     """
