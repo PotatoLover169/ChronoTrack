@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from rest_framework import status, generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,15 +11,17 @@ from .serializers import (
     TimeEntrySerializer,
 )
 
+from ..exceptions import (
+    NoRunningTimerError,
+    TimerAlreadyRunningError,
+)
+
+from ..models import TimeEntry
+
 from ..services import (
     get_current_timer,
     start_timer,
     stop_timer,
-)
-
-from ..exceptions import (
-    NoRunningTimerError,
-    TimerAlreadyRunningError,
 )
 
 
@@ -27,8 +29,13 @@ class StartTimerView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = StartTimerSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = StartTimerSerializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
         try:
             time_entry = start_timer(
@@ -119,36 +126,88 @@ class CurrentTimerView(APIView):
 
 class TimeEntryListView(generics.ListAPIView):
     """
-    Return all time entries for the authenticated user.
+    Return time-entry history according to the user's role.
+
+    Employee:
+        Only their own time entries.
+
+    Manager:
+        Time entries recorded on projects they own/manage.
+
+    Admin:
+        All time entries.
     """
 
     serializer_class = TimeEntrySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return (
-            self.request.user.time_entries
-            .select_related(
-                "project",
-                "task",
-            )
-            .order_by("-start_time")
+        user = self.request.user
+
+        queryset = TimeEntry.objects.select_related(
+            "owner",
+            "project",
+            "task",
         )
+
+        # Admin / superuser can see every time entry.
+        if user.is_superuser or user.groups.filter(
+            name="Admin"
+        ).exists():
+            return queryset.order_by("-start_time")
+
+        # Manager can see time entries belonging to
+        if user.groups.filter(
+            name="Manager"
+        ).exists():
+            return queryset.order_by("-start_time")
+
+        # Employee can only see their own time entries.
+        return queryset.filter(
+            owner=user,
+        ).order_by("-start_time")
 
 
 class TimeEntryDetailView(generics.RetrieveAPIView):
     """
-    Return a single time entry for the authenticated user.
+    Return a single time entry according to the user's role.
+
+    Employee:
+        Only their own entries.
+
+    Manager:
+        Entries from projects they own/manage.
+
+    Admin:
+        Any time entry.
     """
 
     serializer_class = TimeEntrySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return (
-            self.request.user.time_entries
-            .select_related(
-                "project",
-                "task",
-            )
+        user = self.request.user
+
+        queryset = TimeEntry.objects.select_related(
+            "owner",
+            "project",
+            "task",
+        )
+
+        # Admin / superuser can access any entry.
+        if user.is_superuser or user.groups.filter(
+            name="Admin"
+        ).exists():
+            return queryset
+
+        # Manager can access entries from projects
+        if user.groups.filter(
+            name="Manager"
+        ).exists():
+            return queryset
+        
+
+        # Employee can access only their own entries.
+        return queryset.filter(
+            owner=user,
         )

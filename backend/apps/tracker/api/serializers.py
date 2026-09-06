@@ -29,6 +29,7 @@ class StartTimerSerializer(serializers.Serializer):
         """
         Ensure the selected task belongs to the selected project.
         """
+
         project = attrs["project"]
         task = attrs.get("task")
 
@@ -60,6 +61,7 @@ class CurrentTimerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TimeEntry
+
         fields = (
             "id",
             "project",
@@ -73,7 +75,8 @@ class CurrentTimerSerializer(serializers.ModelSerializer):
 
     def get_elapsed_seconds(self, obj):
         """
-        Returns the number of elapsed seconds since the timer started.
+        Returns the number of elapsed seconds since
+        the timer started.
         """
 
         if not obj.start_time:
@@ -96,11 +99,33 @@ class CurrentTimerSerializer(serializers.ModelSerializer):
         minutes = (seconds % 3600) // 60
         seconds = seconds % 60
 
-        return (
-            f"{hours:02}:{minutes:02}:{seconds:02}"
-        )
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+
+class TimeEntryOwnerSerializer(serializers.Serializer):
+    """
+    Lightweight representation of the user who recorded
+    the time entry.
+    """
+
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    email = serializers.EmailField()
+
 
 class TimeEntrySerializer(serializers.ModelSerializer):
+    """
+    Serializer used for time-entry history.
+
+    Includes the employee who recorded the entry,
+    project, task, timing information, billing information,
+    and calculated earnings.
+    """
+
+    owner = TimeEntryOwnerSerializer(
+        read_only=True,
+    )
+
     project = ProjectSummarySerializer(
         read_only=True,
     )
@@ -109,10 +134,18 @@ class TimeEntrySerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        read_only=True,
+    )
+
     class Meta:
         model = TimeEntry
+
         fields = (
             "id",
+            "owner",
             "project",
             "task",
             "description",
@@ -120,8 +153,11 @@ class TimeEntrySerializer(serializers.ModelSerializer):
             "end_time",
             "duration",
             "billable",
+            "hourly_rate",
+            "earnings",
             "status",
         )
+
 
 class TimeEntrySummarySerializer(serializers.ModelSerializer):
     class Meta:
