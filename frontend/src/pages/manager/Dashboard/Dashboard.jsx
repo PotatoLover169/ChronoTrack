@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import api from "../../../services/api";
 import { useAuthContext } from "../../../context/AuthContext";
@@ -18,6 +19,8 @@ function ManagerDashboard() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setError("");
+
         const [projectsRes, tasksRes, entriesRes] = await Promise.all([
           api.get("projects/"),
           api.get("tasks/"),
@@ -28,7 +31,7 @@ function ManagerDashboard() {
         setTasks(tasksRes.data);
         setEntries(entriesRes.data);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load manager dashboard:", err);
         setError("Unable to load manager dashboard.");
       } finally {
         setLoading(false);
@@ -48,6 +51,12 @@ function ManagerDashboard() {
     );
   }
 
+  /*
+   * -----------------------------
+   * Dashboard calculations
+   * -----------------------------
+   */
+
   const activeProjects = projects.filter(
     (project) => project.status === "in_progress"
   );
@@ -55,6 +64,89 @@ function ManagerDashboard() {
   const openTasks = tasks.filter(
     (task) => task.status !== "completed"
   );
+
+  const trackedMembers = new Set(
+    entries
+      .map((entry) => entry.owner?.id)
+      .filter(Boolean)
+  );
+
+  const totalTeamSeconds = entries.reduce((total, entry) => {
+    if (!entry.duration) {
+      return total;
+    }
+
+    const parts = entry.duration.split(" ");
+
+    let timePart = parts[parts.length - 1];
+    let dayPart = 0;
+
+    if (parts.length === 2) {
+      dayPart = Number(parts[0]) || 0;
+    }
+
+    const [hours = 0, minutes = 0, seconds = 0] =
+      timePart.split(":").map(Number);
+
+    return (
+      total +
+      dayPart * 24 * 60 * 60 +
+      hours * 60 * 60 +
+      minutes * 60 +
+      seconds
+    );
+  }, 0);
+
+  const totalTeamHours = totalTeamSeconds / 3600;
+
+  /*
+   * -----------------------------
+   * Helpers
+   * -----------------------------
+   */
+
+  const formatHours = (hours) => {
+    if (!Number.isFinite(hours)) {
+      return "0.00 h";
+    }
+
+    return `${hours.toFixed(2)} h`;
+  };
+
+  const formatDuration = (duration) => {
+    if (!duration) {
+      return "No duration";
+    }
+
+    const parts = duration.split(" ");
+
+    if (parts.length === 2) {
+      const days = Number(parts[0]) || 0;
+      const [hours, minutes] = parts[1].split(":");
+
+      return `${days}d ${hours}h ${minutes}m`;
+    }
+
+    const [hours, minutes] = parts[0].split(":");
+
+    return `${Number(hours)}h ${Number(minutes)}m`;
+  };
+
+  const formatStatus = (status) => {
+    if (!status) {
+      return "";
+    }
+
+    return status
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
+
+  /*
+   * -----------------------------
+   * Render
+   * -----------------------------
+   */
 
   return (
     <div className="dashboard-page">
@@ -76,6 +168,7 @@ function ManagerDashboard() {
         </div>
       </section>
 
+      {/* Error */}
       {error && (
         <div className="dashboard-error">
           {error}
@@ -86,29 +179,51 @@ function ManagerDashboard() {
       <section className="dashboard-summary">
 
         <div className="dashboard-summary-card">
+          <span>Team Hours</span>
+
+          <strong>
+            {formatHours(totalTeamHours)}
+          </strong>
+
+          <small>
+            Total tracked time
+          </small>
+        </div>
+
+        <div className="dashboard-summary-card">
           <span>Active Projects</span>
-          <strong>{activeProjects.length}</strong>
-          <small>Currently running</small>
+
+          <strong>
+            {activeProjects.length}
+          </strong>
+
+          <small>
+            Currently in progress
+          </small>
         </div>
 
         <div className="dashboard-summary-card">
           <span>Open Tasks</span>
-          <strong>{openTasks.length}</strong>
-          <small>Needs attention</small>
-        </div>
 
-        <div className="dashboard-summary-card">
-          <span>Completed Entries</span>
-          <strong>{entries.length}</strong>
-          <small>Tracked sessions</small>
-        </div>
-
-        <div className="dashboard-summary-card">
-          <span>Team Status</span>
-          <strong className="dashboard-value-running">
-            Active
+          <strong>
+            {openTasks.length}
           </strong>
-          <small>Workspace healthy</small>
+
+          <small>
+            Needs attention
+          </small>
+        </div>
+
+        <div className="dashboard-summary-card">
+          <span>Tracked Members</span>
+
+          <strong>
+            {trackedMembers.size}
+          </strong>
+
+          <small>
+            Members with tracked time
+          </small>
         </div>
 
       </section>
@@ -122,7 +237,9 @@ function ManagerDashboard() {
               Quick Actions
             </p>
 
-            <h3>Manage Your Team</h3>
+            <h3>
+              Manage Your Team
+            </h3>
 
             <p className="dashboard-timer-status">
               Jump directly into projects, tasks, or reports.
@@ -131,13 +248,19 @@ function ManagerDashboard() {
 
           <div className="dashboard-timer-controls">
 
-            <button className="dashboard-timer-button">
+            <Link
+              to="/manager/projects"
+              className="dashboard-timer-button"
+            >
               View Projects
-            </button>
+            </Link>
 
-            <button className="dashboard-timer-button">
+            <Link
+              to="/manager/tasks"
+              className="dashboard-timer-button"
+            >
               View Tasks
-            </button>
+            </Link>
 
           </div>
 
@@ -148,7 +271,6 @@ function ManagerDashboard() {
       <section className="dashboard-grid">
 
         {/* Active Projects */}
-
         <div className="dashboard-panel">
 
           <div className="dashboard-panel-header">
@@ -157,30 +279,45 @@ function ManagerDashboard() {
                 Projects
               </p>
 
-              <h3>Active Projects</h3>
+              <h3>
+                Active Projects
+              </h3>
             </div>
+
+            <Link
+              to="/manager/projects"
+              className="dashboard-task-count"
+            >
+              View all
+            </Link>
           </div>
 
           {activeProjects.length ? (
             <div className="dashboard-project-list">
+
               {activeProjects.slice(0, 5).map((project) => (
                 <div
                   className="dashboard-project-item"
                   key={project.id}
                 >
                   <div className="dashboard-project-details">
-                    <strong>{project.name}</strong>
+
+                    <strong>
+                      {project.name}
+                    </strong>
 
                     <span>
                       {project.client?.name || "No client"}
                     </span>
+
                   </div>
 
                   <span className="dashboard-project-status">
-                    In Progress
+                    {formatStatus(project.status)}
                   </span>
                 </div>
               ))}
+
             </div>
           ) : (
             <div className="dashboard-panel-empty">
@@ -190,8 +327,7 @@ function ManagerDashboard() {
 
         </div>
 
-        {/* Recent Activity */}
-
+        {/* Recent Team Activity */}
         <div className="dashboard-panel">
 
           <div className="dashboard-panel-header">
@@ -200,7 +336,9 @@ function ManagerDashboard() {
                 Activity
               </p>
 
-              <h3>Recent Activity</h3>
+              <h3>
+                Recent Team Activity
+              </h3>
             </div>
           </div>
 
@@ -215,15 +353,30 @@ function ManagerDashboard() {
                   <div className="dashboard-activity-indicator" />
 
                   <div className="dashboard-activity-details">
-                    <strong>{entry.project?.name}</strong>
 
-                    <span>{entry.owner?.username}</span>
+                    <strong>
+                      {entry.project?.name || "Project"}
+                    </strong>
+
+                    <span>
+                      {entry.owner?.username || "Team member"}
+                      {entry.task?.title
+                        ? ` · ${entry.task.title}`
+                        : ""}
+                    </span>
+
                   </div>
 
                   <div className="dashboard-activity-time">
-                    <strong>{entry.duration}</strong>
 
-                    <span>{entry.status}</span>
+                    <strong>
+                      {formatDuration(entry.duration)}
+                    </strong>
+
+                    <span>
+                      {formatStatus(entry.status)}
+                    </span>
+
                   </div>
                 </div>
               ))}
@@ -231,7 +384,7 @@ function ManagerDashboard() {
             </div>
           ) : (
             <div className="dashboard-panel-empty">
-              No recent activity.
+              No recent team activity.
             </div>
           )}
 
@@ -240,7 +393,6 @@ function ManagerDashboard() {
       </section>
 
       {/* Team Tasks */}
-
       <section className="dashboard-panel dashboard-tasks-panel">
 
         <div className="dashboard-panel-header">
@@ -250,12 +402,17 @@ function ManagerDashboard() {
               Tasks
             </p>
 
-            <h3>Team Tasks</h3>
+            <h3>
+              Team Tasks
+            </h3>
           </div>
 
-          <span className="dashboard-task-count">
+          <Link
+            to="/manager/tasks"
+            className="dashboard-task-count"
+          >
             {openTasks.length} open
-          </span>
+          </Link>
 
         </div>
 
@@ -270,18 +427,25 @@ function ManagerDashboard() {
                 <div className="dashboard-task-check" />
 
                 <div className="dashboard-task-details">
-                  <strong>{task.title}</strong>
+
+                  <strong>
+                    {task.title}
+                  </strong>
 
                   <span>
                     {task.project?.name || "Project"}
+                    {" · "}
+                    {task.assigned_to?.username || "Unassigned"}
                   </span>
+
                 </div>
 
                 <span
                   className={`dashboard-task-priority dashboard-priority-${task.priority}`}
                 >
-                  {task.priority}
+                  {formatStatus(task.status)}
                 </span>
+
               </div>
             ))}
 
