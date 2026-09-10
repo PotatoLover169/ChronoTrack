@@ -87,3 +87,51 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
         )
+
+class AdminCreateUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+    )
+
+    role = serializers.ChoiceField(
+        choices=[
+            ("Manager", "Manager"),
+            ("Employee", "Employee"),
+        ],
+        write_only=True,
+    )
+
+    class Meta:
+        model = User
+
+        fields = (
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password",
+            "role",
+        )
+
+    def create(self, validated_data):
+        role = validated_data.pop("role")
+
+        user = User.objects.create_user(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            first_name=validated_data.get("first_name", ""),
+            last_name=validated_data.get("last_name", ""),
+            password=validated_data["password"],
+        )
+
+        from django.contrib.auth.models import Group
+
+        group, _ = Group.objects.get_or_create(
+            name=role
+        )
+
+        user.groups.add(group)
+
+        return user

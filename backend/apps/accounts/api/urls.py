@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
+    AdminCreateUserAPIView,
     MeAPIView,
     RegisterAPIView,
     UpdateProfileAPIView,
@@ -18,5 +19,10 @@ urlpatterns = [
         "profile/",
         UpdateProfileAPIView.as_view(),
         name="update-profile",
+    ),
+    path(
+        "users/create/",
+        AdminCreateUserAPIView.as_view(),
+        name="admin-create-user",
     ),
 ]

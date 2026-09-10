@@ -2,10 +2,13 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from .permissions import IsAdminUserRole
+
 from .serializers import (
     RegisterSerializer,
     UpdateProfileSerializer,
     UserSerializer,
+    AdminCreateUserSerializer,
 )
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -30,3 +33,12 @@ class UpdateProfileAPIView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+class AdminCreateUserAPIView(generics.CreateAPIView):
+    """
+    Allows administrators to create Manager
+    and Employee accounts.
+    """
+
+    serializer_class = AdminCreateUserSerializer
+    permission_classes = [IsAdminUserRole]
