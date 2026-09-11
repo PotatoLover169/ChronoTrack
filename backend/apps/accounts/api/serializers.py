@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+
 User = get_user_model()
 
 
@@ -88,6 +89,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "email",
         )
 
+
 class AdminCreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
@@ -135,3 +137,43 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         user.groups.add(group)
 
         return user
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+
+        fields = (
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "is_active",
+            "date_joined",
+        )
+
+        read_only_fields = (
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "is_active",
+            "date_joined",
+        )
+
+    def get_role(self, obj):
+        if obj.is_superuser:
+            return "Admin"
+
+        group = obj.groups.first()
+
+        if group:
+            return group.name
+
+        return "Employee"

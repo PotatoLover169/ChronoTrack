@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -9,7 +11,12 @@ from .serializers import (
     UpdateProfileSerializer,
     UserSerializer,
     AdminCreateUserSerializer,
+    AdminUserSerializer,
 )
+
+
+User = get_user_model()
+
 
 class RegisterAPIView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -23,6 +30,7 @@ class MeAPIView(generics.GenericAPIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
+
 class UpdateProfileAPIView(generics.UpdateAPIView):
     """
     Update the authenticated user's profile.
@@ -34,6 +42,7 @@ class UpdateProfileAPIView(generics.UpdateAPIView):
     def get_object(self):
         return self.request.user
 
+
 class AdminCreateUserAPIView(generics.CreateAPIView):
     """
     Allows administrators to create Manager
@@ -42,3 +51,15 @@ class AdminCreateUserAPIView(generics.CreateAPIView):
 
     serializer_class = AdminCreateUserSerializer
     permission_classes = [IsAdminUserRole]
+
+
+class AdminUserListAPIView(generics.ListAPIView):
+    """
+    Allows administrators to view all users.
+    """
+
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAdminUserRole]
+
+    def get_queryset(self):
+        return User.objects.all().order_by("-date_joined")
