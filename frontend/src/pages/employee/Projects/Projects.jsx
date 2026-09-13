@@ -5,6 +5,7 @@ import useAuth from "../../../hooks/useAuth";
 
 import "../../../styles/projects.css";
 
+
 const STATUS_OPTIONS = [
   {
     value: "planning",
@@ -28,11 +29,14 @@ const STATUS_OPTIONS = [
   },
 ];
 
+
 function Projects() {
   const { user } = useAuth();
 
   const canManageProjects =
-    user?.role === "Manager" || user?.role === "Admin";
+    user?.role === "Manager" ||
+    user?.role === "Admin";
+
 
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
@@ -45,53 +49,78 @@ function Projects() {
   const [endDate, setEndDate] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
 
-  const [editingProjectId, setEditingProjectId] = useState(null);
+  const [editingProjectId, setEditingProjectId] =
+    useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deletingProjectId, setDeletingProjectId] = useState(null);
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+  const [deletingProjectId, setDeletingProjectId] =
+    useState(null);
 
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] =
+    useState("");
+
 
   useEffect(() => {
-    loadProjects();
+    let cancelled = false;
 
-    if (canManageProjects) {
-      loadClients();
-    }
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const requests = [
+          api.get("projects/"),
+        ];
+
+        if (canManageProjects) {
+          requests.push(
+            api.get("clients/")
+          );
+        }
+
+        const responses =
+          await Promise.all(requests);
+
+        if (cancelled) {
+          return;
+        }
+
+        setProjects(
+          responses[0].data
+        );
+
+        if (canManageProjects) {
+          setClients(
+            responses[1].data
+          );
+        }
+      } catch (requestError) {
+        if (!cancelled) {
+          setError(
+            requestError.response?.data?.detail ||
+              "Unable to load projects."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+
+    loadData();
+
+
+    return () => {
+      cancelled = true;
+    };
   }, [canManageProjects]);
 
-  const loadProjects = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await api.get("projects/");
-
-      setProjects(response.data);
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.detail ||
-          "Unable to load projects."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadClients = async () => {
-    try {
-      const response = await api.get("clients/");
-
-      setClients(response.data);
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.detail ||
-          "Unable to load clients."
-      );
-    }
-  };
 
   const resetForm = () => {
     setName("");
@@ -104,6 +133,7 @@ function Projects() {
     setEditingProjectId(null);
   };
 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -115,6 +145,7 @@ function Projects() {
     setSuccessMessage("");
     setIsSubmitting(true);
 
+
     const projectData = {
       name,
       description,
@@ -125,6 +156,7 @@ function Projects() {
       hourly_rate: hourlyRate || "0",
     };
 
+
     try {
       if (editingProjectId) {
         const response = await api.patch(
@@ -132,12 +164,15 @@ function Projects() {
           projectData
         );
 
-        setProjects((currentProjects) =>
-          currentProjects.map((project) =>
-            project.id === editingProjectId
-              ? response.data
-              : project
-          )
+        setProjects(
+          (currentProjects) =>
+            currentProjects.map(
+              (project) =>
+                project.id ===
+                editingProjectId
+                  ? response.data
+                  : project
+            )
         );
 
         setSuccessMessage(
@@ -149,10 +184,12 @@ function Projects() {
           projectData
         );
 
-        setProjects((currentProjects) => [
-          response.data,
-          ...currentProjects,
-        ]);
+        setProjects(
+          (currentProjects) => [
+            response.data,
+            ...currentProjects,
+          ]
+        );
 
         setSuccessMessage(
           "Project created successfully."
@@ -161,14 +198,18 @@ function Projects() {
 
       resetForm();
     } catch (requestError) {
-      const responseData = requestError.response?.data;
+      const responseData =
+        requestError.response?.data;
 
       if (responseData) {
-        const firstError = Object.values(responseData)[0];
+        const firstError =
+          Object.values(responseData)[0];
 
         if (Array.isArray(firstError)) {
           setError(firstError[0]);
-        } else if (typeof firstError === "string") {
+        } else if (
+          typeof firstError === "string"
+        ) {
           setError(firstError);
         } else {
           setError(
@@ -189,6 +230,7 @@ function Projects() {
     }
   };
 
+
   const handleEdit = (project) => {
     if (!canManageProjects) {
       return;
@@ -199,18 +241,31 @@ function Projects() {
 
     setEditingProjectId(project.id);
     setName(project.name || "");
-    setDescription(project.description || "");
-    setClientId(project.client?.id || "");
-    setStatus(project.status || "planning");
-    setStartDate(project.start_date || "");
-    setEndDate(project.end_date || "");
-    setHourlyRate(project.hourly_rate || "");
+    setDescription(
+      project.description || ""
+    );
+    setClientId(
+      project.client?.id || ""
+    );
+    setStatus(
+      project.status || "planning"
+    );
+    setStartDate(
+      project.start_date || ""
+    );
+    setEndDate(
+      project.end_date || ""
+    );
+    setHourlyRate(
+      project.hourly_rate || ""
+    );
 
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   };
+
 
   const handleDelete = async (project) => {
     if (!canManageProjects) {
@@ -229,17 +284,24 @@ function Projects() {
     setSuccessMessage("");
     setDeletingProjectId(project.id);
 
-    try {
-      await api.delete(`projects/${project.id}/`);
 
-      setProjects((currentProjects) =>
-        currentProjects.filter(
-          (currentProject) =>
-            currentProject.id !== project.id
-        )
+    try {
+      await api.delete(
+        `projects/${project.id}/`
       );
 
-      if (editingProjectId === project.id) {
+      setProjects(
+        (currentProjects) =>
+          currentProjects.filter(
+            (currentProject) =>
+              currentProject.id !==
+              project.id
+          )
+      );
+
+      if (
+        editingProjectId === project.id
+      ) {
         resetForm();
       }
 
@@ -256,19 +318,29 @@ function Projects() {
     }
   };
 
+
   const handleCancelEdit = () => {
     resetForm();
     setError("");
     setSuccessMessage("");
   };
 
-  const getStatusLabel = (statusValue) => {
-    const statusOption = STATUS_OPTIONS.find(
-      (option) => option.value === statusValue
-    );
 
-    return statusOption?.label || statusValue;
+  const getStatusLabel = (
+    statusValue
+  ) => {
+    const statusOption =
+      STATUS_OPTIONS.find(
+        (option) =>
+          option.value === statusValue
+      );
+
+    return (
+      statusOption?.label ||
+      statusValue
+    );
   };
+
 
   const formatDate = (dateValue) => {
     if (!dateValue) {
@@ -280,15 +352,19 @@ function Projects() {
     ).toLocaleDateString();
   };
 
+
   return (
     <section className="projects-page">
+
       <div className="projects-header">
         <div>
           <p className="section-label">
             WORKSPACE
           </p>
 
-          <h1>Projects</h1>
+          <h1>
+            Projects
+          </h1>
 
           <p>
             {canManageProjects
@@ -298,11 +374,13 @@ function Projects() {
         </div>
       </div>
 
+
       {error && (
         <div className="projects-message projects-error">
           {error}
         </div>
       )}
+
 
       {successMessage && (
         <div className="projects-message projects-success">
@@ -310,10 +388,14 @@ function Projects() {
         </div>
       )}
 
+
       {/* Create / Edit Project */}
+
       {canManageProjects && (
         <div className="projects-card">
+
           <div className="card-heading">
+
             <div>
               <p className="section-label">
                 {editingProjectId
@@ -328,22 +410,29 @@ function Projects() {
               </h2>
             </div>
 
+
             {editingProjectId && (
               <button
                 type="button"
                 className="secondary-button"
-                onClick={handleCancelEdit}
+                onClick={
+                  handleCancelEdit
+                }
               >
                 Cancel
               </button>
             )}
+
           </div>
+
 
           <form
             className="project-form"
             onSubmit={handleSubmit}
           >
+
             <div className="project-form-row">
+
               <div className="form-field">
                 <label htmlFor="project-name">
                   Project Name
@@ -354,12 +443,15 @@ function Projects() {
                   type="text"
                   value={name}
                   onChange={(event) =>
-                    setName(event.target.value)
+                    setName(
+                      event.target.value
+                    )
                   }
                   placeholder="Enter project name"
                   required
                 />
               </div>
+
 
               <div className="form-field">
                 <label htmlFor="project-client">
@@ -370,7 +462,9 @@ function Projects() {
                   id="project-client"
                   value={clientId}
                   onChange={(event) =>
-                    setClientId(event.target.value)
+                    setClientId(
+                      event.target.value
+                    )
                   }
                   required
                 >
@@ -378,19 +472,24 @@ function Projects() {
                     Select a client
                   </option>
 
-                  {clients.map((client) => (
-                    <option
-                      key={client.id}
-                      value={client.id}
-                    >
-                      {client.name}
-                    </option>
-                  ))}
+                  {clients.map(
+                    (client) => (
+                      <option
+                        key={client.id}
+                        value={client.id}
+                      >
+                        {client.name}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
+
             </div>
 
+
             <div className="form-field">
+
               <label htmlFor="project-description">
                 Description
               </label>
@@ -399,15 +498,21 @@ function Projects() {
                 id="project-description"
                 value={description}
                 onChange={(event) =>
-                  setDescription(event.target.value)
+                  setDescription(
+                    event.target.value
+                  )
                 }
                 placeholder="Describe the project"
                 rows="3"
               />
+
             </div>
 
+
             <div className="project-form-row">
+
               <div className="form-field">
+
                 <label htmlFor="project-status">
                   Status
                 </label>
@@ -416,21 +521,28 @@ function Projects() {
                   id="project-status"
                   value={status}
                   onChange={(event) =>
-                    setStatus(event.target.value)
+                    setStatus(
+                      event.target.value
+                    )
                   }
                 >
-                  {STATUS_OPTIONS.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
+                  {STATUS_OPTIONS.map(
+                    (option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </option>
+                    )
+                  )}
                 </select>
+
               </div>
 
+
               <div className="form-field">
+
                 <label htmlFor="hourly-rate">
                   Hourly Rate
                 </label>
@@ -442,15 +554,22 @@ function Projects() {
                   step="0.01"
                   value={hourlyRate}
                   onChange={(event) =>
-                    setHourlyRate(event.target.value)
+                    setHourlyRate(
+                      event.target.value
+                    )
                   }
                   placeholder="0.00"
                 />
+
               </div>
+
             </div>
 
+
             <div className="project-form-row">
+
               <div className="form-field">
+
                 <label htmlFor="project-start-date">
                   Start Date
                 </label>
@@ -460,12 +579,17 @@ function Projects() {
                   type="date"
                   value={startDate}
                   onChange={(event) =>
-                    setStartDate(event.target.value)
+                    setStartDate(
+                      event.target.value
+                    )
                   }
                 />
+
               </div>
 
+
               <div className="form-field">
+
                 <label htmlFor="project-end-date">
                   End Date
                 </label>
@@ -475,13 +599,19 @@ function Projects() {
                   type="date"
                   value={endDate}
                   onChange={(event) =>
-                    setEndDate(event.target.value)
+                    setEndDate(
+                      event.target.value
+                    )
                   }
                 />
+
               </div>
+
             </div>
 
+
             <div className="project-form-actions">
+
               <button
                 type="submit"
                 className="create-project-button"
@@ -496,24 +626,34 @@ function Projects() {
                     : "Create Project"}
               </button>
 
+
               {editingProjectId && (
                 <button
                   type="button"
                   className="secondary-button"
-                  onClick={handleCancelEdit}
+                  onClick={
+                    handleCancelEdit
+                  }
                   disabled={isSubmitting}
                 >
                   Cancel
                 </button>
               )}
+
             </div>
+
           </form>
+
         </div>
       )}
 
+
       {/* Project List */}
+
       <div className="projects-card">
+
         <div className="card-heading">
+
           <div>
             <p className="section-label">
               PROJECTS
@@ -526,6 +666,7 @@ function Projects() {
             </h2>
           </div>
 
+
           {!loading && (
             <span className="project-count">
               {projects.length}{" "}
@@ -534,14 +675,19 @@ function Projects() {
                 : "projects"}
             </span>
           )}
+
         </div>
+
 
         {loading ? (
           <div className="projects-state">
-            <p>Loading projects...</p>
+            <p>
+              Loading projects...
+            </p>
           </div>
         ) : projects.length === 0 ? (
           <div className="projects-state projects-empty-state">
+
             <div className="empty-state-icon">
               □
             </div>
@@ -557,17 +703,24 @@ function Projects() {
                 ? "Create your first project to start organizing work."
                 : "Projects assigned to you will appear here."}
             </p>
+
           </div>
         ) : (
           <div className="project-list">
+
             {projects.map((project) => (
               <article
                 className="project-row"
                 key={project.id}
               >
+
                 <div className="project-info">
+
                   <div className="project-title-row">
-                    <h3>{project.name}</h3>
+
+                    <h3>
+                      {project.name}
+                    </h3>
 
                     <span
                       className={`project-status status-${project.status}`}
@@ -576,7 +729,9 @@ function Projects() {
                         project.status
                       )}
                     </span>
+
                   </div>
+
 
                   {project.description && (
                     <p className="project-description">
@@ -584,7 +739,9 @@ function Projects() {
                     </p>
                   )}
 
+
                   <div className="project-details">
+
                     {project.client?.name && (
                       <span>
                         Client:{" "}
@@ -593,6 +750,7 @@ function Projects() {
                         </strong>
                       </span>
                     )}
+
 
                     {project.start_date && (
                       <span>
@@ -603,6 +761,7 @@ function Projects() {
                       </span>
                     )}
 
+
                     {project.end_date && (
                       <span>
                         End:{" "}
@@ -611,10 +770,14 @@ function Projects() {
                         )}
                       </span>
                     )}
+
                   </div>
+
                 </div>
 
+
                 <div className="project-actions">
+
                   <div className="project-rate">
                     ₱
                     {Number(
@@ -623,8 +786,10 @@ function Projects() {
                     /hr
                   </div>
 
+
                   {canManageProjects && (
                     <div className="project-action-buttons">
+
                       <button
                         type="button"
                         className="edit-project-button"
@@ -634,6 +799,7 @@ function Projects() {
                       >
                         Edit
                       </button>
+
 
                       <button
                         type="button"
@@ -651,16 +817,23 @@ function Projects() {
                           ? "Deleting..."
                           : "Delete"}
                       </button>
+
                     </div>
                   )}
+
                 </div>
+
               </article>
             ))}
+
           </div>
         )}
+
       </div>
+
     </section>
   );
 }
+
 
 export default Projects;

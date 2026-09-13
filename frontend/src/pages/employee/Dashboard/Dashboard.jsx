@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import "../../../styles/dashboard.css";
 import api from "../../../services/api";
-import { useAuthContext } from "../../../context/AuthContext";
+import { useAuthContext } from "../../../hooks/useAuthContext";
+
 
 function Dashboard() {
   const { user } = useAuthContext();
@@ -22,29 +23,41 @@ function Dashboard() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [error, setError] = useState("");
 
+
   const loadDashboard = async () => {
     const response = await api.get("dashboard/");
     setDashboard(response.data);
   };
+
 
   const loadProjects = async () => {
     const response = await api.get("projects/");
     setProjects(response.data);
   };
 
+
   const loadTasks = async () => {
     const response = await api.get("tasks/");
     setTasks(response.data);
   };
 
+
   const loadCurrentTimer = async () => {
     try {
-      const response = await api.get("tracker/current/");
+      const response = await api.get(
+        "tracker/current/"
+      );
+
       setCurrentTimer(response.data);
 
-      if (response.data?.elapsed_seconds !== undefined) {
+      if (
+        response.data?.elapsed_seconds !==
+        undefined
+      ) {
         setElapsedSeconds(
-          Number(response.data.elapsed_seconds || 0)
+          Number(
+            response.data.elapsed_seconds || 0
+          )
         );
       }
     } catch (err) {
@@ -52,10 +65,14 @@ function Dashboard() {
         setCurrentTimer(null);
         setElapsedSeconds(0);
       } else {
-        console.error("Failed to load current timer:", err);
+        console.error(
+          "Failed to load current timer:",
+          err
+        );
       }
     }
   };
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -69,9 +86,14 @@ function Dashboard() {
           loadCurrentTimer(),
         ]);
       } catch (err) {
-        console.error("Failed to load dashboard:", err);
+        console.error(
+          "Failed to load dashboard:",
+          err
+        );
 
-        setError("Unable to load dashboard data.");
+        setError(
+          "Unable to load dashboard data."
+        );
       } finally {
         setLoading(false);
       }
@@ -80,22 +102,28 @@ function Dashboard() {
     loadData();
   }, []);
 
+
   useEffect(() => {
     if (!currentTimer) {
-      setElapsedSeconds(0);
-      return;
+      return undefined;
     }
 
     const interval = setInterval(() => {
-      setElapsedSeconds((previous) => previous + 1);
+      setElapsedSeconds(
+        (previous) => previous + 1
+      );
     }, 1000);
 
     return () => clearInterval(interval);
   }, [currentTimer]);
 
+
   const handleStartTimer = async () => {
     if (!selectedProject) {
-      setError("Please select a project first.");
+      setError(
+        "Please select a project first."
+      );
+
       return;
     }
 
@@ -103,10 +131,13 @@ function Dashboard() {
       setError("");
       setStartingTimer(true);
 
-      const response = await api.post("tracker/start/", {
-        project: Number(selectedProject),
-        description,
-      });
+      await api.post(
+        "tracker/start/",
+        {
+          project: Number(selectedProject),
+          description,
+        }
+      );
 
       setDescription("");
       setSelectedProject("");
@@ -116,7 +147,10 @@ function Dashboard() {
         loadCurrentTimer(),
       ]);
     } catch (err) {
-      console.error("Failed to start timer:", err);
+      console.error(
+        "Failed to start timer:",
+        err
+      );
 
       if (err.response?.status === 409) {
         setError(
@@ -134,6 +168,7 @@ function Dashboard() {
     }
   };
 
+
   const handleStopTimer = async () => {
     try {
       setError("");
@@ -146,7 +181,10 @@ function Dashboard() {
 
       await loadDashboard();
     } catch (err) {
-      console.error("Failed to stop timer:", err);
+      console.error(
+        "Failed to stop timer:",
+        err
+      );
 
       setError(
         err.response?.data?.detail ||
@@ -157,17 +195,23 @@ function Dashboard() {
     }
   };
 
+
   const formatElapsedTime = (seconds) => {
     const totalSeconds = Math.max(
       0,
       Number(seconds || 0)
     );
 
-    const hours = Math.floor(totalSeconds / 3600);
+    const hours = Math.floor(
+      totalSeconds / 3600
+    );
+
     const minutes = Math.floor(
       (totalSeconds % 3600) / 60
     );
-    const remainingSeconds = totalSeconds % 60;
+
+    const remainingSeconds =
+      totalSeconds % 60;
 
     return [
       hours,
@@ -179,6 +223,7 @@ function Dashboard() {
       )
       .join(":");
   };
+
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -194,15 +239,19 @@ function Dashboard() {
     return "Good evening";
   };
 
+
   const summary = dashboard?.summary;
+
 
   const todayHours = Number(
     summary?.today_hours || 0
   );
 
+
   const activeProjectsCount = Number(
     summary?.active_projects || 0
   );
+
 
   const openTasks = useMemo(() => {
     return tasks.filter(
@@ -210,11 +259,14 @@ function Dashboard() {
     );
   }, [tasks]);
 
+
   const activeProjects = useMemo(() => {
     return projects.filter(
-      (project) => project.status === "in_progress"
+      (project) =>
+        project.status === "in_progress"
     );
   }, [projects]);
+
 
   if (loading) {
     return (
@@ -225,6 +277,7 @@ function Dashboard() {
       </div>
     );
   }
+
 
   return (
     <div className="dashboard-page">
@@ -250,6 +303,7 @@ function Dashboard() {
         </div>
       </section>
 
+
       {/* =========================
           ERROR
       ========================= */}
@@ -260,6 +314,7 @@ function Dashboard() {
         </div>
       )}
 
+
       {/* =========================
           SUMMARY
       ========================= */}
@@ -267,7 +322,9 @@ function Dashboard() {
       <section className="dashboard-summary">
 
         <div className="dashboard-summary-card">
-          <span>Today's Hours</span>
+          <span>
+            Today's Hours
+          </span>
 
           <strong>
             {todayHours.toFixed(2)}h
@@ -278,8 +335,11 @@ function Dashboard() {
           </small>
         </div>
 
+
         <div className="dashboard-summary-card">
-          <span>Current Timer</span>
+          <span>
+            Current Timer
+          </span>
 
           <strong
             className={
@@ -289,7 +349,9 @@ function Dashboard() {
             }
           >
             {currentTimer
-              ? formatElapsedTime(elapsedSeconds)
+              ? formatElapsedTime(
+                  elapsedSeconds
+                )
               : "Not running"}
           </strong>
 
@@ -300,8 +362,11 @@ function Dashboard() {
           </small>
         </div>
 
+
         <div className="dashboard-summary-card">
-          <span>Active Projects</span>
+          <span>
+            Active Projects
+          </span>
 
           <strong>
             {activeProjectsCount}
@@ -312,8 +377,11 @@ function Dashboard() {
           </small>
         </div>
 
+
         <div className="dashboard-summary-card">
-          <span>Open Tasks</span>
+          <span>
+            Open Tasks
+          </span>
 
           <strong>
             {openTasks.length}
@@ -326,6 +394,7 @@ function Dashboard() {
 
       </section>
 
+
       {/* =========================
           CURRENT TIMER
       ========================= */}
@@ -336,6 +405,7 @@ function Dashboard() {
           <div className="dashboard-running-timer">
 
             <div className="dashboard-timer-heading">
+
               <div>
                 <p className="dashboard-panel-eyebrow">
                   Time Tracking
@@ -354,7 +424,9 @@ function Dashboard() {
               <span className="dashboard-timer-badge">
                 RUNNING
               </span>
+
             </div>
+
 
             <div className="dashboard-timer-running-content">
 
@@ -374,6 +446,7 @@ function Dashboard() {
                     "Working session"}
                 </span>
               </div>
+
 
               <button
                 type="button"
@@ -407,6 +480,7 @@ function Dashboard() {
               </p>
             </div>
 
+
             <div className="dashboard-timer-controls">
 
               <select
@@ -434,6 +508,7 @@ function Dashboard() {
                 )}
               </select>
 
+
               <input
                 type="text"
                 value={description}
@@ -445,6 +520,7 @@ function Dashboard() {
                 placeholder="What are you working on?"
                 disabled={startingTimer}
               />
+
 
               <button
                 type="button"
@@ -464,6 +540,7 @@ function Dashboard() {
 
       </section>
 
+
       {/* =========================
           MAIN DASHBOARD
       ========================= */}
@@ -477,6 +554,7 @@ function Dashboard() {
         <div className="dashboard-panel">
 
           <div className="dashboard-panel-header">
+
             <div>
               <p className="dashboard-panel-eyebrow">
                 Projects
@@ -486,7 +564,9 @@ function Dashboard() {
                 Active Projects
               </h3>
             </div>
+
           </div>
+
 
           {activeProjects.length > 0 ? (
             <div className="dashboard-project-list">
@@ -498,6 +578,7 @@ function Dashboard() {
                     className="dashboard-project-item"
                     key={project.id}
                   >
+
                     <div className="dashboard-project-details">
 
                       <strong>
@@ -514,6 +595,7 @@ function Dashboard() {
                     <span className="dashboard-project-status">
                       In Progress
                     </span>
+
                   </div>
                 ))}
 
@@ -526,6 +608,7 @@ function Dashboard() {
 
         </div>
 
+
         {/* =====================
             RECENT ACTIVITY
         ===================== */}
@@ -533,6 +616,7 @@ function Dashboard() {
         <div className="dashboard-panel">
 
           <div className="dashboard-panel-header">
+
             <div>
               <p className="dashboard-panel-eyebrow">
                 Activity
@@ -542,7 +626,9 @@ function Dashboard() {
                 Recent Activity
               </h3>
             </div>
+
           </div>
+
 
           {dashboard?.recent_entries?.length ? (
             <div className="dashboard-activity-list">
@@ -554,7 +640,9 @@ function Dashboard() {
                     className="dashboard-activity-item"
                     key={entry.id}
                   >
+
                     <div className="dashboard-activity-indicator" />
+
 
                     <div className="dashboard-activity-details">
 
@@ -570,6 +658,7 @@ function Dashboard() {
 
                     </div>
 
+
                     <div className="dashboard-activity-time">
 
                       <strong>
@@ -582,6 +671,7 @@ function Dashboard() {
                       </span>
 
                     </div>
+
                   </div>
                 ))}
 
@@ -595,6 +685,7 @@ function Dashboard() {
         </div>
 
       </section>
+
 
       {/* =========================
           TODAY'S TASKS
@@ -620,6 +711,7 @@ function Dashboard() {
 
         </div>
 
+
         {openTasks.length > 0 ? (
           <div className="dashboard-task-list">
 
@@ -633,6 +725,7 @@ function Dashboard() {
 
                   <div className="dashboard-task-check" />
 
+
                   <div className="dashboard-task-details">
 
                     <strong>
@@ -645,6 +738,7 @@ function Dashboard() {
                     </span>
 
                   </div>
+
 
                   <span
                     className={`dashboard-task-priority dashboard-priority-${task.priority}`}
@@ -667,5 +761,6 @@ function Dashboard() {
     </div>
   );
 }
+
 
 export default Dashboard;

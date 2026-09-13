@@ -4,80 +4,164 @@ import api from "../../../services/api";
 
 import "../../../styles/time-tracking.css";
 
+
 function TimeTracking() {
   const [projects, setProjects] = useState([]);
-  const [timeEntries, setTimeEntries] = useState([]);
-  const [currentTimer, setCurrentTimer] = useState(null);
+  const [timeEntries, setTimeEntries] =
+    useState([]);
+  const [currentTimer, setCurrentTimer] =
+    useState(null);
 
-  const [selectedProject, setSelectedProject] = useState("");
-  const [description, setDescription] = useState("");
+  const [selectedProject, setSelectedProject] =
+    useState("");
+  const [description, setDescription] =
+    useState("");
 
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+  const [error, setError] =
+    useState("");
+
 
   useEffect(() => {
-    loadTimeTrackingData();
-  }, []);
+    let cancelled = false;
 
-  const loadTimeTrackingData = async () => {
-    setLoading(true);
-    setError("");
 
-    try {
-      const [projectsResponse, entriesResponse] =
-        await Promise.all([
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const [
+          projectsResponse,
+          entriesResponse,
+        ] = await Promise.all([
           api.get("projects/"),
           api.get("tracker/"),
         ]);
 
-      setProjects(projectsResponse.data);
-      setTimeEntries(entriesResponse.data);
 
-      try {
-        const currentResponse = await api.get(
-          "tracker/current/"
+        let currentTimerData = null;
+
+
+        try {
+          const currentResponse =
+            await api.get(
+              "tracker/current/"
+            );
+
+          currentTimerData =
+            currentResponse.data;
+        } catch (currentError) {
+          if (
+            currentError.response?.status !==
+            404
+          ) {
+            throw currentError;
+          }
+        }
+
+
+        if (cancelled) {
+          return;
+        }
+
+
+        setProjects(
+          projectsResponse.data
         );
 
-        setCurrentTimer(currentResponse.data);
-      } catch (currentError) {
-        if (currentError.response?.status === 404) {
-          setCurrentTimer(null);
-        } else {
-          throw currentError;
+        setTimeEntries(
+          entriesResponse.data
+        );
+
+        setCurrentTimer(
+          currentTimerData
+        );
+      } catch (requestError) {
+        if (!cancelled) {
+          setError(
+            requestError.response?.data?.detail ||
+              "Unable to load time tracking data."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
         }
       }
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.detail ||
-          "Unable to load time tracking data."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleStartTimer = async (event) => {
+
+    loadData();
+
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+
+  const handleStartTimer = async (
+    event
+  ) => {
     event.preventDefault();
 
     if (!selectedProject) {
-      setError("Please select a project.");
+      setError(
+        "Please select a project."
+      );
+
       return;
     }
 
     setError("");
     setIsSubmitting(true);
 
+
     try {
-      await api.post("tracker/start/", {
-        project: Number(selectedProject),
-        description,
-      });
+      await api.post(
+        "tracker/start/",
+        {
+          project: Number(
+            selectedProject
+          ),
+          description,
+        }
+      );
 
       setDescription("");
       setSelectedProject("");
 
-      await loadTimeTrackingData();
+
+      const [
+        projectsResponse,
+        entriesResponse,
+      ] = await Promise.all([
+        api.get("projects/"),
+        api.get("tracker/"),
+      ]);
+
+
+      const currentResponse =
+        await api.get(
+          "tracker/current/"
+        );
+
+
+      setProjects(
+        projectsResponse.data
+      );
+
+      setTimeEntries(
+        entriesResponse.data
+      );
+
+      setCurrentTimer(
+        currentResponse.data
+      );
     } catch (requestError) {
       setError(
         requestError.response?.data?.detail ||
@@ -88,14 +172,36 @@ function TimeTracking() {
     }
   };
 
+
   const handleStopTimer = async () => {
     setError("");
     setIsSubmitting(true);
 
-    try {
-      await api.post("tracker/stop/");
 
-      await loadTimeTrackingData();
+    try {
+      await api.post(
+        "tracker/stop/"
+      );
+
+
+      const [
+        projectsResponse,
+        entriesResponse,
+      ] = await Promise.all([
+        api.get("projects/"),
+        api.get("tracker/"),
+      ]);
+
+
+      setProjects(
+        projectsResponse.data
+      );
+
+      setTimeEntries(
+        entriesResponse.data
+      );
+
+      setCurrentTimer(null);
     } catch (requestError) {
       setError(
         requestError.response?.data?.detail ||
@@ -106,56 +212,80 @@ function TimeTracking() {
     }
   };
 
+
   if (loading) {
     return (
       <section className="time-tracking-page">
+
         <div className="time-tracking-header">
+
           <p className="section-label">
             TIME TRACKING
           </p>
 
-          <h1>Time Tracking</h1>
+          <h1>
+            Time Tracking
+          </h1>
 
           <p>
             Track and manage your working hours.
           </p>
+
         </div>
+
 
         <div className="time-tracking-card">
           Loading time tracking data...
         </div>
+
       </section>
     );
   }
 
+
   return (
     <section className="time-tracking-page">
+
       {/* Page Header */}
+
       <div className="time-tracking-header">
+
         <div>
+
           <p className="section-label">
             TIME TRACKING
           </p>
 
-          <h1>Time Tracking</h1>
+          <h1>
+            Time Tracking
+          </h1>
 
           <p>
             Track and manage your working hours.
           </p>
+
         </div>
+
       </div>
 
+
       {/* Error */}
+
       {error && (
         <div className="time-tracking-error">
           {error}
         </div>
       )}
 
+
       {/* Current Timer */}
+
       <div className="time-tracking-card current-timer-card">
+
         <div className="card-heading">
+
           <div>
+
             <p className="section-label">
               CURRENT TIMER
             </p>
@@ -165,7 +295,9 @@ function TimeTracking() {
                 ? "Timer Running"
                 : "No Active Timer"}
             </h2>
+
           </div>
+
 
           <span
             className={
@@ -174,44 +306,63 @@ function TimeTracking() {
                 : "timer-status"
             }
           >
-            {currentTimer ? "RUNNING" : "IDLE"}
+            {currentTimer
+              ? "RUNNING"
+              : "IDLE"}
           </span>
+
         </div>
+
 
         {currentTimer ? (
           <div className="current-timer-content">
+
             <div>
+
               {/* Project */}
+
               <p className="timer-project">
                 {currentTimer.project?.name ||
-                  `Project #${currentTimer.project?.id || currentTimer.project}`}
+                  `Project #${
+                    currentTimer.project?.id ||
+                    currentTimer.project
+                  }`}
               </p>
 
+
               {/* Task */}
+
               {currentTimer.task && (
                 <p className="timer-task">
-                  {typeof currentTimer.task === "object"
+                  {typeof currentTimer.task ===
+                  "object"
                     ? currentTimer.task.name ||
                       `Task #${currentTimer.task.id}`
                     : `Task #${currentTimer.task}`}
                 </p>
               )}
 
+
               {/* Description */}
+
               {currentTimer.description && (
                 <p className="timer-description">
                   {currentTimer.description}
                 </p>
               )}
 
+
               {/* Start Time */}
+
               <p className="timer-start">
                 Started:{" "}
                 {new Date(
                   currentTimer.start_time
                 ).toLocaleString()}
               </p>
+
             </div>
+
 
             <button
               type="button"
@@ -223,33 +374,48 @@ function TimeTracking() {
                 ? "Stopping..."
                 : "Stop Timer"}
             </button>
+
           </div>
         ) : (
           <p className="empty-message">
             You currently have no running timer.
           </p>
         )}
+
       </div>
 
+
       {/* Start Timer */}
+
       {!currentTimer && (
         <div className="time-tracking-card">
+
           <div className="card-heading">
+
             <div>
+
               <p className="section-label">
                 START TIMER
               </p>
 
-              <h2>Start a new timer</h2>
+              <h2>
+                Start a new timer
+              </h2>
+
             </div>
+
           </div>
+
 
           <form
             className="timer-form"
             onSubmit={handleStartTimer}
           >
+
             {/* Project */}
+
             <div className="form-field">
+
               <label htmlFor="project">
                 Project
               </label>
@@ -264,23 +430,31 @@ function TimeTracking() {
                 }
                 required
               >
+
                 <option value="">
                   Select a project
                 </option>
 
-                {projects.map((project) => (
-                  <option
-                    key={project.id}
-                    value={project.id}
-                  >
-                    {project.name}
-                  </option>
-                ))}
+                {projects.map(
+                  (project) => (
+                    <option
+                      key={project.id}
+                      value={project.id}
+                    >
+                      {project.name}
+                    </option>
+                  )
+                )}
+
               </select>
+
             </div>
 
+
             {/* Description */}
+
             <div className="form-field">
+
               <label htmlFor="description">
                 Description
               </label>
@@ -290,13 +464,18 @@ function TimeTracking() {
                 type="text"
                 value={description}
                 onChange={(event) =>
-                  setDescription(event.target.value)
+                  setDescription(
+                    event.target.value
+                  )
                 }
                 placeholder="What are you working on?"
               />
+
             </div>
 
+
             {/* Start Button */}
+
             <button
               type="submit"
               className="start-timer-button"
@@ -306,21 +485,33 @@ function TimeTracking() {
                 ? "Starting..."
                 : "Start Timer"}
             </button>
+
           </form>
+
         </div>
       )}
 
+
       {/* History */}
+
       <div className="time-tracking-card">
+
         <div className="card-heading">
+
           <div>
+
             <p className="section-label">
               HISTORY
             </p>
 
-            <h2>Recent Time Entries</h2>
+            <h2>
+              Recent Time Entries
+            </h2>
+
           </div>
+
         </div>
+
 
         {timeEntries.length === 0 ? (
           <p className="empty-message">
@@ -328,40 +519,58 @@ function TimeTracking() {
           </p>
         ) : (
           <div className="time-entry-list">
-            {timeEntries.map((entry) => (
-              <div
-                className="time-entry-row"
-                key={entry.id}
-              >
-                <div>
-                  <h3>
-                    {entry.project?.name ||
-                      `Project #${entry.project?.id || entry.project}`}
-                  </h3>
 
-                  {entry.description && (
-                    <p>
-                      {entry.description}
-                    </p>
-                  )}
+            {timeEntries.map(
+              (entry) => (
+                <div
+                  className="time-entry-row"
+                  key={entry.id}
+                >
 
-                  <span>
-                    {new Date(
-                      entry.start_time
-                    ).toLocaleString()}
-                  </span>
+                  <div>
+
+                    <h3>
+                      {entry.project?.name ||
+                        `Project #${
+                          entry.project?.id ||
+                          entry.project
+                        }`}
+                    </h3>
+
+
+                    {entry.description && (
+                      <p>
+                        {entry.description}
+                      </p>
+                    )}
+
+
+                    <span>
+                      {new Date(
+                        entry.start_time
+                      ).toLocaleString()}
+                    </span>
+
+                  </div>
+
+
+                  <div className="time-entry-duration">
+                    {entry.duration ||
+                      "Running"}
+                  </div>
+
                 </div>
+              )
+            )}
 
-                <div className="time-entry-duration">
-                  {entry.duration || "Running"}
-                </div>
-              </div>
-            ))}
           </div>
         )}
+
       </div>
+
     </section>
   );
 }
+
 
 export default TimeTracking;

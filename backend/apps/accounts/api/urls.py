@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     AdminCreateUserAPIView,
     AdminUserListAPIView,
+    AssignableUserListAPIView,
     MeAPIView,
     RegisterAPIView,
     UpdateProfileAPIView,
@@ -47,6 +48,12 @@ urlpatterns = [
         "users/create/",
         AdminCreateUserAPIView.as_view(),
         name="admin-create-user",
+    ),
+
+    path(
+        "users/assignable/",
+        AssignableUserListAPIView.as_view(),
+        name="assignable-user-list",
     ),
 
     path(

@@ -1,17 +1,16 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
 } from "react";
 
+import { AuthContext } from "./AuthContextValue";
 import api from "../services/api";
-
-const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() =>
+    Boolean(localStorage.getItem("access_token"))
+  );
 
   const isAuthenticated = Boolean(user);
 
@@ -19,7 +18,6 @@ export function AuthProvider({ children }) {
     const accessToken = localStorage.getItem("access_token");
 
     if (!accessToken) {
-      setLoading(false);
       return;
     }
 
@@ -59,7 +57,6 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-
     setUser(null);
   };
 
@@ -76,8 +73,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuthContext() {
-  return useContext(AuthContext);
 }

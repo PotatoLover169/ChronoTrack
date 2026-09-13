@@ -4,7 +4,10 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .permissions import IsAdminUserRole
+from .permissions import (
+    IsAdminUserRole,
+    IsManagerOrAdminRole,
+)
 
 from .serializers import (
     RegisterSerializer,
@@ -12,6 +15,7 @@ from .serializers import (
     UserSerializer,
     AdminCreateUserSerializer,
     AdminUserSerializer,
+    AssignableUserSerializer,
 )
 
 
@@ -63,3 +67,27 @@ class AdminUserListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return User.objects.all().order_by("-date_joined")
+
+class AssignableUserListAPIView(generics.ListAPIView):
+    """
+    Return active Employee accounts that can be assigned
+    to tasks by Managers and Administrators.
+    """
+
+    serializer_class = AssignableUserSerializer
+    permission_classes = [IsManagerOrAdminRole]
+
+    def get_queryset(self):
+        return (
+            User.objects
+            .filter(
+                is_active=True,
+                groups__name="Employee",
+            )
+            .distinct()
+            .order_by(
+                "first_name",
+                "last_name",
+                "username",
+            )
+        )

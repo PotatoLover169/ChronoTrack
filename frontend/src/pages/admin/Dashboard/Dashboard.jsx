@@ -110,16 +110,16 @@ function AdminDashboard() {
     const parts = duration.trim().split(" ");
 
     let days = 0;
-    let timePart = "";
+    let timeValue = parts[0];
 
     if (parts.length === 2) {
       days = Number(parts[0]) || 0;
-      timePart = parts[1];
-    } else {
-      timePart = parts[0];
+      timeValue = parts[1];
     }
 
-    const timeParts = timePart.split(":").map(Number);
+    const timeParts = timeValue
+      .split(":")
+      .map(Number);
 
     const hours = timeParts[0] || 0;
     const minutes = timeParts[1] || 0;

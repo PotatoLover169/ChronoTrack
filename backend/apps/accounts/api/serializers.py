@@ -177,3 +177,14 @@ class AdminUserSerializer(serializers.ModelSerializer):
             return group.name
 
         return "Employee"
+
+class AssignableUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+        )

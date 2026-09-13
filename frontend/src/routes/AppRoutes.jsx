@@ -4,8 +4,6 @@ import EmployeeLayout from "../layouts/EmployeeLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import AdminLayout from "../layouts/AdminLayout";
 
-import RoleBasedLayout from "../layouts/RoleBasedLayout";
-
 import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 
