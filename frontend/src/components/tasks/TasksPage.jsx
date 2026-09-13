@@ -5,7 +5,6 @@ import useAuth from "../../hooks/useAuth";
 
 import "../../styles/tasks.css";
 
-
 const STATUS_OPTIONS = [
   {
     value: "todo",
@@ -20,7 +19,6 @@ const STATUS_OPTIONS = [
     label: "Completed",
   },
 ];
-
 
 const PRIORITY_OPTIONS = [
   {
@@ -37,19 +35,12 @@ const PRIORITY_OPTIONS = [
   },
 ];
 
-
 function TasksPage() {
   const { user } = useAuth();
 
-  const isManager =
-    user?.role === "Manager";
-
-  const isAdmin =
-    user?.role === "Admin";
-
-  const canManageTasks =
-    isManager || isAdmin;
-
+  const isManager = user?.role === "Manager";
+  const isAdmin = user?.role === "Admin";
+  const canManageTasks = isManager || isAdmin;
 
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -61,23 +52,18 @@ function TasksPage() {
   const [assignedToId, setAssignedToId] = useState("");
   const [priority, setPriority] = useState("medium");
   const [status, setStatus] = useState("todo");
-  const [estimatedHours, setEstimatedHours] =
-    useState("");
+  const [estimatedHours, setEstimatedHours] = useState("");
   const [dueDate, setDueDate] = useState("");
 
-  const [editingTaskId, setEditingTaskId] =
-    useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-  const [deletingTaskId, setDeletingTaskId] =
-    useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingTaskId, setDeletingTaskId] = useState(null);
 
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] =
-    useState("");
-
+  const [successMessage, setSuccessMessage] = useState("");
 
   /*
    * ---------------------------------------------------------
@@ -85,61 +71,61 @@ function TasksPage() {
    * ---------------------------------------------------------
    */
 
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  const loadData = async () => {
-    try {
-      const requests = [
-        api.get("tasks/"),
-        api.get("projects/"),
-      ];
+    const loadData = async () => {
+      try {
+        const requests = [
+          api.get("tasks/"),
+          api.get("projects/"),
+        ];
 
-      if (canManageTasks) {
-        requests.push(
-          api.get("auth/users/assignable/")
-        );
+        if (canManageTasks) {
+          requests.push(
+            api.get("auth/users/assignable/")
+          );
+        }
+
+        const responses = await Promise.all(requests);
+
+        if (cancelled) {
+          return;
+        }
+
+        setTasks(responses[0].data);
+        setProjects(responses[1].data);
+
+        if (canManageTasks) {
+          setEmployees(responses[2].data);
+        }
+
+        setError("");
+      } catch (requestError) {
+        if (!cancelled) {
+          console.error(
+            "Failed to load task data:",
+            requestError
+          );
+
+          setError(
+            requestError.response?.data?.detail ||
+              "Unable to load task data."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
+    };
 
-      const responses = await Promise.all(requests);
+    loadData();
 
-      if (cancelled) {
-        return;
-      }
-
-      setTasks(responses[0].data);
-      setProjects(responses[1].data);
-
-      if (canManageTasks) {
-        setEmployees(responses[2].data);
-      }
-
-      setError("");
-    } catch (requestError) {
-      if (!cancelled) {
-        console.error(
-          "Failed to load task data:",
-          requestError
-        );
-
-        setError(
-          requestError.response?.data?.detail ||
-            "Unable to load task data."
-        );
-      }
-    } finally {
-      if (!cancelled) {
-        setLoading(false);
-      }
-    }
-  };
-
-  loadData();
-
-  return () => {
-    cancelled = true;
-  };
-}, [canManageTasks]);
+    return () => {
+      cancelled = true;
+    };
+  }, [canManageTasks]);
 
   /*
    * ---------------------------------------------------------
@@ -159,32 +145,37 @@ useEffect(() => {
     setEditingTaskId(null);
   };
 
+  const openCreateModal = () => {
+    resetForm();
+    setError("");
+    setSuccessMessage("");
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsModalOpen(false);
+    resetForm();
+  };
 
   const formatStatus = (statusValue) => {
     const option = STATUS_OPTIONS.find(
-      (item) =>
-        item.value === statusValue
+      (item) => item.value === statusValue
     );
 
-    return (
-      option?.label ||
-      statusValue
-    );
+    return option?.label || statusValue;
   };
-
 
   const formatPriority = (priorityValue) => {
     const option = PRIORITY_OPTIONS.find(
-      (item) =>
-        item.value === priorityValue
+      (item) => item.value === priorityValue
     );
 
-    return (
-      option?.label ||
-      priorityValue
-    );
+    return option?.label || priorityValue;
   };
-
 
   const formatDate = (dateValue) => {
     if (!dateValue) {
@@ -195,7 +186,6 @@ useEffect(() => {
       `${dateValue}T00:00:00`
     ).toLocaleDateString();
   };
-
 
   const getTaskError = (
     requestError,
@@ -232,7 +222,6 @@ useEffect(() => {
     return fallback;
   };
 
-
   /*
    * ---------------------------------------------------------
    * Task Statistics
@@ -265,7 +254,6 @@ useEffect(() => {
     };
   }, [tasks]);
 
-
   /*
    * ---------------------------------------------------------
    * Create / Update
@@ -280,10 +268,7 @@ useEffect(() => {
     }
 
     if (!projectId) {
-      setError(
-        "Please select a project."
-      );
-
+      setError("Please select a project.");
       return;
     }
 
@@ -307,7 +292,6 @@ useEffect(() => {
         dueDate || null,
     };
 
-
     try {
       if (editingTaskId) {
         const response =
@@ -320,8 +304,7 @@ useEffect(() => {
           (currentTasks) =>
             currentTasks.map(
               (task) =>
-                task.id ===
-                editingTaskId
+                task.id === editingTaskId
                   ? response.data
                   : task
             )
@@ -349,6 +332,7 @@ useEffect(() => {
         );
       }
 
+      setIsModalOpen(false);
       resetForm();
     } catch (requestError) {
       setError(
@@ -363,7 +347,6 @@ useEffect(() => {
       setIsSubmitting(false);
     }
   };
-
 
   /*
    * ---------------------------------------------------------
@@ -381,44 +364,21 @@ useEffect(() => {
 
     setEditingTaskId(task.id);
 
-    setTitle(
-      task.title || ""
-    );
-
-    setDescription(
-      task.description || ""
-    );
-
-    setProjectId(
-      task.project?.id || ""
-    );
-
+    setTitle(task.title || "");
+    setDescription(task.description || "");
+    setProjectId(task.project?.id || "");
     setAssignedToId(
       task.assigned_to?.id || ""
     );
-
-    setPriority(
-      task.priority || "medium"
-    );
-
-    setStatus(
-      task.status || "todo"
-    );
-
+    setPriority(task.priority || "medium");
+    setStatus(task.status || "todo");
     setEstimatedHours(
       task.estimated_hours || ""
     );
+    setDueDate(task.due_date || "");
 
-    setDueDate(
-      task.due_date || ""
-    );
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    setIsModalOpen(true);
   };
-
 
   /*
    * ---------------------------------------------------------
@@ -453,14 +413,12 @@ useEffect(() => {
         (currentTasks) =>
           currentTasks.filter(
             (currentTask) =>
-              currentTask.id !==
-              task.id
+              currentTask.id !== task.id
           )
       );
 
-      if (
-        editingTaskId === task.id
-      ) {
+      if (editingTaskId === task.id) {
+        setIsModalOpen(false);
         resetForm();
       }
 
@@ -479,7 +437,6 @@ useEffect(() => {
     }
   };
 
-
   /*
    * ---------------------------------------------------------
    * Employee Status Update
@@ -494,9 +451,7 @@ useEffect(() => {
       return;
     }
 
-    if (
-      task.status === newStatus
-    ) {
+    if (task.status === newStatus) {
       return;
     }
 
@@ -516,8 +471,7 @@ useEffect(() => {
         (currentTasks) =>
           currentTasks.map(
             (currentTask) =>
-              currentTask.id ===
-              task.id
+              currentTask.id === task.id
                 ? response.data
                 : currentTask
           )
@@ -536,40 +490,6 @@ useEffect(() => {
     }
   };
 
-
-  /*
-   * ---------------------------------------------------------
-   * Loading
-   * ---------------------------------------------------------
-   */
-
-  if (loading) {
-    return (
-      <section className="tasks-page">
-
-        <div className="tasks-header">
-          <div>
-            <p className="section-label">
-              TASKS
-            </p>
-
-            <h1>Tasks</h1>
-
-            <p>
-              Loading your tasks...
-            </p>
-          </div>
-        </div>
-
-        <div className="tasks-card">
-          Loading tasks...
-        </div>
-
-      </section>
-    );
-  }
-
-
   /*
    * ---------------------------------------------------------
    * Render
@@ -579,32 +499,25 @@ useEffect(() => {
   return (
     <section className="tasks-page">
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
       <div className="tasks-header">
 
         <div>
           <p className="section-label">
-            TASKS
+            TASK MANAGEMENT
           </p>
 
-          <h1>Tasks</h1>
+          <h1>
+            Tasks
+          </h1>
 
           <p>
             {canManageTasks
-              ? "Create, assign, and manage organization tasks."
-              : "View your assigned tasks and update their status."}
+              ? "Organize work, assign responsibilities, and monitor task progress."
+              : "View your assigned tasks and keep their status up to date."}
           </p>
         </div>
 
       </div>
-
-
-      {/* =====================================================
-          MESSAGES
-      ===================================================== */}
 
       {error && (
         <div className="tasks-message tasks-error">
@@ -618,17 +531,14 @@ useEffect(() => {
         </div>
       )}
 
-
       {/* =====================================================
           SUMMARY
-      ===================================================== */}
+          ===================================================== */}
 
       <div className="tasks-summary">
 
         <div className="tasks-summary-card">
-          <span>
-            Total Tasks
-          </span>
+          <span>Total Tasks</span>
 
           <strong>
             {taskStats.total}
@@ -639,11 +549,8 @@ useEffect(() => {
           </small>
         </div>
 
-
         <div className="tasks-summary-card">
-          <span>
-            To Do
-          </span>
+          <span>To Do</span>
 
           <strong>
             {taskStats.todo}
@@ -654,11 +561,8 @@ useEffect(() => {
           </small>
         </div>
 
-
         <div className="tasks-summary-card">
-          <span>
-            In Progress
-          </span>
+          <span>In Progress</span>
 
           <strong>
             {taskStats.inProgress}
@@ -669,11 +573,8 @@ useEffect(() => {
           </small>
         </div>
 
-
         <div className="tasks-summary-card">
-          <span>
-            Completed
-          </span>
+          <span>Completed</span>
 
           <strong>
             {taskStats.completed}
@@ -686,361 +587,64 @@ useEffect(() => {
 
       </div>
 
-
-      {/* =====================================================
-          CREATE / EDIT FORM
-      ===================================================== */}
-
-      {canManageTasks && (
-        <div className="tasks-card">
-
-          <div className="card-heading">
-
-            <div>
-
-              <p className="section-label">
-                {editingTaskId
-                  ? "EDIT TASK"
-                  : "NEW TASK"}
-              </p>
-
-              <h2>
-                {editingTaskId
-                  ? "Edit task"
-                  : "Create a task"}
-              </h2>
-
-            </div>
-
-
-            {editingTaskId && (
-              <button
-                type="button"
-                className="tasks-secondary-button"
-                onClick={() => {
-                  resetForm();
-                  setError("");
-                  setSuccessMessage("");
-                }}
-              >
-                Cancel
-              </button>
-            )}
-
-          </div>
-
-
-          <form
-            className="tasks-form"
-            onSubmit={handleSubmit}
-          >
-
-            <div className="tasks-form-row">
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-title">
-                  Task Title
-                </label>
-
-                <input
-                  id="task-title"
-                  type="text"
-                  value={title}
-                  onChange={(event) =>
-                    setTitle(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter task title"
-                  required
-                />
-
-              </div>
-
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-project">
-                  Project
-                </label>
-
-                <select
-                  id="task-project"
-                  value={projectId}
-                  onChange={(event) =>
-                    setProjectId(
-                      event.target.value
-                    )
-                  }
-                  required
-                >
-
-                  <option value="">
-                    Select a project
-                  </option>
-
-                  {projects.map(
-                    (project) => (
-                      <option
-                        key={project.id}
-                        value={project.id}
-                      >
-                        {project.name}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-            </div>
-
-
-            <div className="tasks-form-field">
-
-              <label htmlFor="task-description">
-                Description
-              </label>
-
-              <textarea
-                id="task-description"
-                value={description}
-                onChange={(event) =>
-                  setDescription(
-                    event.target.value
-                  )
-                }
-                placeholder="Describe the task"
-                rows="3"
-              />
-
-            </div>
-
-
-            <div className="tasks-form-row">
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-assignee">
-                  Assign To
-                </label>
-
-                <select
-                  id="task-assignee"
-                  value={assignedToId}
-                  onChange={(event) =>
-                    setAssignedToId(
-                      event.target.value
-                    )
-                  }
-                >
-
-                  <option value="">
-                    Unassigned
-                  </option>
-
-                  {employees.map(
-                    (employee) => (
-                      <option
-                        key={employee.id}
-                        value={employee.id}
-                      >
-                        {employee.first_name ||
-                        employee.last_name
-                          ? `${employee.first_name || ""} ${
-                              employee.last_name || ""
-                            }`.trim()
-                          : employee.username}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-priority">
-                  Priority
-                </label>
-
-                <select
-                  id="task-priority"
-                  value={priority}
-                  onChange={(event) =>
-                    setPriority(
-                      event.target.value
-                    )
-                  }
-                >
-
-                  {PRIORITY_OPTIONS.map(
-                    (option) => (
-                      <option
-                        key={option.value}
-                        value={option.value}
-                      >
-                        {option.label}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-            </div>
-
-
-            <div className="tasks-form-row">
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-status">
-                  Status
-                </label>
-
-                <select
-                  id="task-status"
-                  value={status}
-                  onChange={(event) =>
-                    setStatus(
-                      event.target.value
-                    )
-                  }
-                >
-
-                  {STATUS_OPTIONS.map(
-                    (option) => (
-                      <option
-                        key={option.value}
-                        value={option.value}
-                      >
-                        {option.label}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-estimated-hours">
-                  Estimated Hours
-                </label>
-
-                <input
-                  id="task-estimated-hours"
-                  type="number"
-                  min="0"
-                  step="0.25"
-                  value={estimatedHours}
-                  onChange={(event) =>
-                    setEstimatedHours(
-                      event.target.value
-                    )
-                  }
-                  placeholder="0.00"
-                />
-
-              </div>
-
-            </div>
-
-
-            <div className="tasks-form-row">
-
-              <div className="tasks-form-field">
-
-                <label htmlFor="task-due-date">
-                  Due Date
-                </label>
-
-                <input
-                  id="task-due-date"
-                  type="date"
-                  value={dueDate}
-                  onChange={(event) =>
-                    setDueDate(
-                      event.target.value
-                    )
-                  }
-                />
-
-              </div>
-
-            </div>
-
-
-            <div className="tasks-form-actions">
-
-              <button
-                type="submit"
-                className="tasks-primary-button"
-                disabled={isSubmitting}
-              >
-                {isSubmitting
-                  ? "Saving..."
-                  : editingTaskId
-                    ? "Update Task"
-                    : "Create Task"}
-              </button>
-
-            </div>
-
-          </form>
-
-        </div>
-      )}
-
-
       {/* =====================================================
           TASK LIST
-      ===================================================== */}
+          ===================================================== */}
 
       <div className="tasks-card">
 
         <div className="card-heading">
 
           <div>
-
             <p className="section-label">
-              {canManageTasks
-                ? "ORGANIZATION TASKS"
-                : "MY TASKS"}
+              WORK ORGANIZATION
             </p>
 
             <h2>
-              {canManageTasks
-                ? "Task Management"
-                : "Assigned Tasks"}
+              Task List
             </h2>
+          </div>
+
+          <div className="tasks-heading-actions">
+
+            <span className="tasks-count">
+              {taskStats.total}{" "}
+              {taskStats.total === 1
+                ? "task"
+                : "tasks"}
+            </span>
+
+            {canManageTasks && (
+              <button
+                type="button"
+                className="tasks-primary-button"
+                onClick={openCreateModal}
+              >
+                Create Task
+              </button>
+            )}
 
           </div>
 
-          <span className="tasks-count">
-            {tasks.length} tasks
-          </span>
-
         </div>
 
+        {loading ? (
 
-        {tasks.length ? (
+          <div className="tasks-empty-state">
+            <p>
+              Loading tasks...
+            </p>
+          </div>
+
+        ) : tasks.length > 0 ? (
 
           <div className="tasks-list">
 
             {tasks.map((task) => (
 
               <div
-                className="task-row"
                 key={task.id}
+                className="task-row"
               >
 
                 <div className="task-main">
@@ -1059,8 +663,15 @@ useEffect(() => {
                       )}
                     </span>
 
-                  </div>
+                    <span
+                      className={`task-status task-status-${task.status}`}
+                    >
+                      {formatStatus(
+                        task.status
+                      )}
+                    </span>
 
+                  </div>
 
                   {task.description && (
                     <p className="task-description">
@@ -1068,25 +679,24 @@ useEffect(() => {
                     </p>
                   )}
 
-
                   <div className="task-meta">
 
                     <span>
                       Project:{" "}
                       <strong>
                         {task.project?.name ||
-                          "Unknown"}
+                          "No project"}
                       </strong>
                     </span>
 
-                    <span>
-                      Assigned to:{" "}
-                      <strong>
-                        {task.assigned_to
-                          ?.username ||
-                          "Unassigned"}
-                      </strong>
-                    </span>
+                    {task.assigned_to && (
+                      <span>
+                        Assigned to:{" "}
+                        <strong>
+                          {task.assigned_to.username}
+                        </strong>
+                      </span>
+                    )}
 
                     <span>
                       Due:{" "}
@@ -1098,66 +708,60 @@ useEffect(() => {
                     </span>
 
                     <span>
-                      Estimate:{" "}
+                      Estimated:{" "}
                       <strong>
-                        {task.estimated_hours ||
-                          "0.00"}{" "}
-                        h
+                        {task.estimated_hours || 0}h
                       </strong>
                     </span>
+
+                    {typeof task.actual_hours !==
+                      "undefined" && (
+                      <span>
+                        Actual:{" "}
+                        <strong>
+                          {task.actual_hours || 0}h
+                        </strong>
+                      </span>
+                    )}
 
                   </div>
 
                 </div>
 
-
                 <div className="task-actions">
 
                   {canManageTasks ? (
 
-                    <>
+                    <div className="task-action-buttons">
 
-                      <span
-                        className={`task-status task-status-${task.status}`}
+                      <button
+                        type="button"
+                        className="tasks-edit-button"
+                        onClick={() =>
+                          handleEdit(task)
+                        }
                       >
-                        {formatStatus(
-                          task.status
-                        )}
-                      </span>
+                        Edit
+                      </button>
 
-                      <div className="task-action-buttons">
-
-                        <button
-                          type="button"
-                          className="tasks-edit-button"
-                          onClick={() =>
-                            handleEdit(task)
-                          }
-                        >
-                          Edit
-                        </button>
-
-
-                        <button
-                          type="button"
-                          className="tasks-delete-button"
-                          onClick={() =>
-                            handleDelete(task)
-                          }
-                          disabled={
-                            deletingTaskId ===
-                            task.id
-                          }
-                        >
-                          {deletingTaskId ===
+                      <button
+                        type="button"
+                        className="tasks-delete-button"
+                        onClick={() =>
+                          handleDelete(task)
+                        }
+                        disabled={
+                          deletingTaskId ===
                           task.id
-                            ? "Deleting..."
-                            : "Delete"}
-                        </button>
+                        }
+                      >
+                        {deletingTaskId ===
+                        task.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
 
-                      </div>
-
-                    </>
+                    </div>
 
                   ) : (
 
@@ -1166,7 +770,7 @@ useEffect(() => {
                       <label
                         htmlFor={`task-status-${task.id}`}
                       >
-                        Status
+                        Update Status
                       </label>
 
                       <select
@@ -1179,22 +783,16 @@ useEffect(() => {
                           )
                         }
                       >
-
                         {STATUS_OPTIONS.map(
                           (option) => (
                             <option
-                              key={
-                                option.value
-                              }
-                              value={
-                                option.value
-                              }
+                              key={option.value}
+                              value={option.value}
                             >
                               {option.label}
                             </option>
                           )
                         )}
-
                       </select>
 
                     </div>
@@ -1223,15 +821,335 @@ useEffect(() => {
                 : "You currently have no tasks assigned to you."}
             </p>
 
+            {canManageTasks && (
+              <button
+                type="button"
+                className="tasks-primary-button tasks-empty-action"
+                onClick={openCreateModal}
+              >
+                Create Task
+              </button>
+            )}
+
           </div>
 
         )}
 
       </div>
 
+      {/* =====================================================
+          CREATE / EDIT MODAL
+          ===================================================== */}
+
+      {isModalOpen && canManageTasks && (
+
+        <div
+          className="tasks-modal-backdrop"
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              closeModal();
+            }
+          }}
+        >
+
+          <div
+            className="tasks-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="task-modal-title"
+          >
+
+            <div className="tasks-modal-header">
+
+              <div>
+                <p className="section-label">
+                  {editingTaskId
+                    ? "EDIT TASK"
+                    : "NEW TASK"}
+                </p>
+
+                <h2 id="task-modal-title">
+                  {editingTaskId
+                    ? "Edit Task"
+                    : "Create Task"}
+                </h2>
+
+                <p>
+                  {editingTaskId
+                    ? "Update the task details and assignment."
+                    : "Add a task and assign it to the appropriate team member."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="tasks-modal-close"
+                onClick={closeModal}
+                aria-label="Close task modal"
+                disabled={isSubmitting}
+              >
+                ×
+              </button>
+
+            </div>
+
+            <form
+              className="tasks-form"
+              onSubmit={handleSubmit}
+            >
+
+              <div className="tasks-form-field">
+
+                <label htmlFor="task-title">
+                  Task Title
+                </label>
+
+                <input
+                  id="task-title"
+                  type="text"
+                  value={title}
+                  onChange={(event) =>
+                    setTitle(event.target.value)
+                  }
+                  placeholder="Enter task title"
+                  required
+                />
+
+              </div>
+
+              <div className="tasks-form-field">
+
+                <label htmlFor="task-description">
+                  Description
+                </label>
+
+                <textarea
+                  id="task-description"
+                  value={description}
+                  onChange={(event) =>
+                    setDescription(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Describe the task..."
+                />
+
+              </div>
+
+              <div className="tasks-form-row">
+
+                <div className="tasks-form-field">
+
+                  <label htmlFor="task-project">
+                    Project
+                  </label>
+
+                  <select
+                    id="task-project"
+                    value={projectId}
+                    onChange={(event) =>
+                      setProjectId(
+                        event.target.value
+                      )
+                    }
+                    required
+                  >
+                    <option value="">
+                      Select project
+                    </option>
+
+                    {projects.map((project) => (
+                      <option
+                        key={project.id}
+                        value={project.id}
+                      >
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+
+                </div>
+
+                <div className="tasks-form-field">
+
+                  <label htmlFor="task-assignee">
+                    Assigned To
+                  </label>
+
+                  <select
+                    id="task-assignee"
+                    value={assignedToId}
+                    onChange={(event) =>
+                      setAssignedToId(
+                        event.target.value
+                      )
+                    }
+                  >
+                    <option value="">
+                      Unassigned
+                    </option>
+
+                    {employees.map((employee) => (
+                      <option
+                        key={employee.id}
+                        value={employee.id}
+                      >
+                        {employee.username}
+                      </option>
+                    ))}
+                  </select>
+
+                </div>
+
+              </div>
+
+              <div className="tasks-form-row">
+
+                <div className="tasks-form-field">
+
+                  <label htmlFor="task-priority">
+                    Priority
+                  </label>
+
+                  <select
+                    id="task-priority"
+                    value={priority}
+                    onChange={(event) =>
+                      setPriority(
+                        event.target.value
+                      )
+                    }
+                  >
+                    {PRIORITY_OPTIONS.map(
+                      (option) => (
+                        <option
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                </div>
+
+                <div className="tasks-form-field">
+
+                  <label htmlFor="task-status">
+                    Status
+                  </label>
+
+                  <select
+                    id="task-status"
+                    value={status}
+                    onChange={(event) =>
+                      setStatus(
+                        event.target.value
+                      )
+                    }
+                  >
+                    {STATUS_OPTIONS.map(
+                      (option) => (
+                        <option
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                </div>
+
+              </div>
+
+              <div className="tasks-form-row">
+
+                <div className="tasks-form-field">
+
+                  <label htmlFor="task-estimated-hours">
+                    Estimated Hours
+                  </label>
+
+                  <input
+                    id="task-estimated-hours"
+                    type="number"
+                    min="0"
+                    step="0.25"
+                    value={estimatedHours}
+                    onChange={(event) =>
+                      setEstimatedHours(
+                        event.target.value
+                      )
+                    }
+                    placeholder="0"
+                  />
+
+                </div>
+
+                <div className="tasks-form-field">
+
+                  <label htmlFor="task-due-date">
+                    Due Date
+                  </label>
+
+                  <input
+                    id="task-due-date"
+                    type="date"
+                    value={dueDate}
+                    onChange={(event) =>
+                      setDueDate(
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="tasks-modal-actions">
+
+                <button
+                  type="button"
+                  className="tasks-secondary-button"
+                  onClick={closeModal}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="tasks-primary-button"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? editingTaskId
+                      ? "Saving..."
+                      : "Creating..."
+                    : editingTaskId
+                      ? "Save Changes"
+                      : "Create Task"}
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
+
     </section>
   );
 }
-
 
 export default TasksPage;
