@@ -1,0 +1,551 @@
+/* ==========================================================
+   REPORTS
+   ========================================================== */
+
+.reports-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 4px 0 40px;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.reports-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 28px;
+}
+
+.reports-eyebrow {
+  margin: 0 0 7px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reports-header h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.reports-header p:not(.reports-eyebrow) {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reports-period {
+  min-width: 190px;
+  padding-bottom: 2px;
+  text-align: right;
+}
+
+.reports-period span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.reports-period strong {
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* ==========================================================
+   SUMMARY
+   ========================================================== */
+
+.reports-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.report-stat {
+  min-width: 0;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.report-stat-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.report-stat-value {
+  display: block;
+  color: var(--color-text);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.report-stat-meta {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+
+/* ==========================================================
+   GRID
+   ========================================================== */
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+
+/* ==========================================================
+   PANEL
+   ========================================================== */
+
+.reports-panel {
+  min-width: 0;
+  padding: 22px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.reports-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.reports-panel-header h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.reports-panel-header p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reports-entry-count {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+
+/* ==========================================================
+   WEEKLY CHART
+   ========================================================== */
+
+.weekly-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  min-height: 220px;
+  padding-top: 8px;
+}
+
+.weekly-chart-column {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  height: 205px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.weekly-chart-value {
+  min-height: 18px;
+  margin-bottom: 7px;
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.weekly-chart-track {
+  display: flex;
+  width: 100%;
+  max-width: 48px;
+  height: 155px;
+  align-items: flex-end;
+  overflow: hidden;
+  background: var(--color-background);
+  border-radius: 6px 6px 3px 3px;
+}
+
+.weekly-chart-bar {
+  width: 100%;
+  min-height: 4px;
+  background: var(--color-primary);
+  border-radius: 6px 6px 3px 3px;
+  transition: height 180ms ease;
+}
+
+.weekly-chart-label {
+  margin-top: 9px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+
+/* ==========================================================
+   TIME BREAKDOWN
+   ========================================================== */
+
+.time-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 12px;
+}
+
+.breakdown-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.breakdown-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.breakdown-heading span {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.breakdown-heading strong {
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.breakdown-track {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: var(--color-background);
+  border-radius: 999px;
+}
+
+.breakdown-fill {
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+}
+
+.breakdown-fill-billable {
+  background: var(--color-success);
+}
+
+.breakdown-fill-non-billable {
+  background: var(--color-text-muted);
+}
+
+
+/* ==========================================================
+   TABLE
+   ========================================================== */
+
+.reports-entries-panel {
+  padding-bottom: 12px;
+}
+
+.reports-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.reports-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+.reports-table th {
+  padding: 0 14px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reports-table td {
+  padding: 15px 14px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.reports-table th:first-child,
+.reports-table td:first-child {
+  padding-left: 4px;
+}
+
+.reports-table th:last-child,
+.reports-table td:last-child {
+  padding-right: 4px;
+}
+
+.reports-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.reports-table td strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.reports-time-range {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ==========================================================
+   BADGES
+   ========================================================== */
+
+.report-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.report-badge-billable {
+  background: rgba(22, 163, 74, 0.10);
+  color: var(--color-success);
+}
+
+.report-badge-neutral {
+  background: rgba(113, 113, 122, 0.10);
+  color: var(--color-text-muted);
+}
+
+
+/* ==========================================================
+   STATES
+   ========================================================== */
+
+.reports-loading,
+.reports-empty,
+.reports-panel-empty {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.reports-loading {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.reports-empty {
+  padding: 40px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.reports-panel-empty {
+  padding: 32px 10px;
+  text-align: center;
+}
+
+.reports-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 22px;
+  background: var(--color-surface);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 10px;
+}
+
+.reports-error strong {
+  color: var(--color-danger);
+  font-size: 14px;
+}
+
+.reports-error span {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.reports-retry-button {
+  margin-top: 8px;
+  padding: 8px 13px;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: 7px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.reports-retry-button:hover {
+  opacity: 0.92;
+}
+
+
+/* ==========================================================
+   DARK MODE
+   ========================================================== */
+
+[data-theme="dark"] .report-badge-billable {
+  background: rgba(22, 163, 74, 0.15);
+}
+
+[data-theme="dark"] .report-badge-neutral {
+  background: rgba(161, 161, 170, 0.12);
+}
+
+
+/* ==========================================================
+   TABLET
+   ========================================================== */
+
+@media (max-width: 1100px) {
+
+  .reports-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+  .reports-page {
+    padding-bottom: 28px;
+  }
+
+  .reports-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .reports-header h1 {
+    font-size: 26px;
+  }
+
+  .reports-period {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .reports-summary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .report-stat {
+    padding: 17px;
+  }
+
+  .report-stat-value {
+    font-size: 23px;
+  }
+
+  .reports-panel {
+    padding: 17px;
+  }
+
+  .weekly-chart {
+    gap: 9px;
+  }
+
+  .weekly-chart-track {
+    max-width: 36px;
+  }
+
+}
+
+
+/* ==========================================================
+   SMALL MOBILE
+   ========================================================== */
+
+@media (max-width: 430px) {
+
+  .reports-header h1 {
+    font-size: 24px;
+  }
+
+  .reports-panel-header {
+    gap: 10px;
+  }
+
+  .reports-panel-header h2 {
+    font-size: 15px;
+  }
+
+  .weekly-chart {
+    gap: 6px;
+  }
+
+  .weekly-chart-label {
+    font-size: 10px;
+  }
+
+  .weekly-chart-value {
+    font-size: 10px;
+  }
+
+}
