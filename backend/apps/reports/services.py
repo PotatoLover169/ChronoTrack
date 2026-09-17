@@ -1,11 +1,13 @@
-from decimal import Decimal
+from calendar import month_name
+from collections import defaultdict
 from datetime import timedelta
+from decimal import Decimal
 
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from apps.projects.models import Project
-
 from apps.tracker.models import (
     TimeEntry,
     TimeEntryStatus,
@@ -43,9 +45,7 @@ def get_report_summary(user):
     ).count()
 
     total_seconds = 0
-
     billable_seconds = 0
-
     estimated_earnings = Decimal("0.00")
 
     for entry in entries:
@@ -218,8 +218,13 @@ def get_weekly_report(
 
     today = timezone.localdate()
 
-    week_start = today - timedelta(days=today.weekday())
-    week_end = week_start + timedelta(days=6)
+    week_start = today - timedelta(
+        days=today.weekday()
+    )
+
+    week_end = week_start + timedelta(
+        days=6
+    )
 
     entries = (
         TimeEntry.objects.filter(
@@ -279,8 +284,6 @@ def get_weekly_report(
         ),
         "entries": entries,
     }
-
-from calendar import month_name
 
 
 def get_monthly_report(
@@ -352,6 +355,7 @@ def get_monthly_report(
         "entries": entries,
     }
 
+
 def get_project_report(
     *,
     user,
@@ -383,11 +387,8 @@ def get_project_report(
     total_entries = entries.count()
 
     total_hours = Decimal("0.00")
-
     billable_hours = Decimal("0.00")
-
     non_billable_hours = Decimal("0.00")
-
     total_earnings = Decimal("0.00")
 
     for entry in entries:
@@ -426,6 +427,7 @@ def get_project_report(
         ),
         "entries": entries,
     }
+
 
 def get_client_report(
     *,
@@ -499,8 +501,6 @@ def get_client_report(
         "entries": entries,
     }
 
-from django.db.models import Sum
-
 
 def get_dashboard_analytics(
     *,
@@ -516,11 +516,14 @@ def get_dashboard_analytics(
         days=today.weekday(),
     )
 
-    completed_entries = get_completed_entries(
-        user,
-    ).select_related(
-        "project",
-        "project__client",
+    completed_entries = (
+        get_completed_entries(
+            user,
+        )
+        .select_related(
+            "project",
+            "project__client",
+        )
     )
 
     total_entries = completed_entries.count()
@@ -639,7 +642,6 @@ def get_dashboard_analytics(
         "top_client": top_client,
     }
 
-from collections import defaultdict
 
 def get_productivity_analytics(
     *,
@@ -651,10 +653,14 @@ def get_productivity_analytics(
 
     today = timezone.localdate()
 
-    start_date = today - timedelta(days=6)
+    start_date = today - timedelta(
+        days=6
+    )
 
     entries = (
-        get_completed_entries(user)
+        get_completed_entries(
+            user,
+        )
         .filter(
             start_time__date__gte=start_date,
         )
@@ -682,15 +688,297 @@ def get_productivity_analytics(
 
     for i in range(7):
 
-        current_day = start_date + timedelta(days=i)
+        current_day = start_date + timedelta(
+            days=i
+        )
 
         results.append(
             {
                 "date": current_day,
-                "hours": daily_hours[current_day].quantize(
+                "hours": daily_hours[
+                    current_day
+                ].quantize(
                     Decimal("0.01")
                 ),
             }
         )
 
     return results
+
+
+def get_team_report(
+    *,
+    user,
+):
+    """
+    Return team reporting data for projects
+    managed by the authenticated user.
+
+    The manager can only see completed time entries
+    belonging to projects where they are the owner.
+    """
+
+    projects = (
+        Project.objects.filter(
+            owner=user,
+        )
+        .select_related(
+            "client",
+        )
+        .prefetch_related(
+            "members",
+        )
+        .order_by(
+            "name",
+        )
+    )
+
+    entries = (
+        TimeEntry.objects.filter(
+            project__owner=user,
+            status=TimeEntryStatus.COMPLETED,
+        )
+        .select_related(
+            "owner",
+            "project",
+            "project__client",
+            "task",
+        )
+        .order_by(
+            "-start_time",
+        )
+    )
+
+    total_entries = entries.count()
+
+    total_hours = Decimal("0.00")
+    billable_hours = Decimal("0.00")
+    non_billable_hours = Decimal("0.00")
+    total_earnings = Decimal("0.00")
+
+    for entry in entries:
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        total_hours += hours
+
+        if entry.billable:
+
+            billable_hours += hours
+            total_earnings += entry.earnings
+
+        else:
+
+            non_billable_hours += hours
+
+    # ------------------------------------------------------
+    # Team members
+    # ------------------------------------------------------
+
+    members = {}
+
+    for project in projects:
+
+        for member in project.members.all():
+
+            if member.id not in members:
+
+                members[member.id] = {
+                    "id": member.id,
+                    "username": member.username,
+                    "first_name": member.first_name,
+                    "last_name": member.last_name,
+                    "total_entries": 0,
+                    "total_hours": Decimal("0.00"),
+                    "billable_hours": Decimal("0.00"),
+                    "non_billable_hours": Decimal("0.00"),
+                    "estimated_earnings": Decimal("0.00"),
+                }
+
+    for entry in entries:
+
+        member_id = entry.owner_id
+
+        if member_id not in members:
+            continue
+
+        member = members[member_id]
+
+        member["total_entries"] += 1
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        member["total_hours"] += hours
+
+        if entry.billable:
+
+            member["billable_hours"] += hours
+            member["estimated_earnings"] += (
+                entry.earnings
+            )
+
+        else:
+
+            member["non_billable_hours"] += hours
+
+    team_members = []
+
+    for member in members.values():
+
+        team_members.append(
+            {
+                **member,
+                "total_hours": member[
+                    "total_hours"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+                "billable_hours": member[
+                    "billable_hours"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+                "non_billable_hours": member[
+                    "non_billable_hours"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+                "estimated_earnings": member[
+                    "estimated_earnings"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+            }
+        )
+
+    team_members.sort(
+        key=lambda member: (
+            -float(member["total_hours"]),
+            member["username"],
+        )
+    )
+
+    # ------------------------------------------------------
+    # Project statistics
+    # ------------------------------------------------------
+
+    project_stats = {}
+
+    for project in projects:
+
+        project_stats[project.id] = {
+            "id": project.id,
+            "name": project.name,
+            "client": project.client.name,
+            "status": project.status,
+            "total_entries": 0,
+            "total_hours": Decimal("0.00"),
+            "billable_hours": Decimal("0.00"),
+            "non_billable_hours": Decimal("0.00"),
+            "estimated_earnings": Decimal("0.00"),
+        }
+
+    for entry in entries:
+
+        project_id = entry.project_id
+
+        if project_id not in project_stats:
+            continue
+
+        project = project_stats[project_id]
+
+        project["total_entries"] += 1
+
+        if not entry.duration:
+            continue
+
+        hours = Decimal(
+            str(
+                entry.duration.total_seconds() / 3600
+            )
+        )
+
+        project["total_hours"] += hours
+
+        if entry.billable:
+
+            project["billable_hours"] += hours
+            project["estimated_earnings"] += (
+                entry.earnings
+            )
+
+        else:
+
+            project["non_billable_hours"] += hours
+
+    project_results = []
+
+    for project in project_stats.values():
+
+        project_results.append(
+            {
+                **project,
+                "total_hours": project[
+                    "total_hours"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+                "billable_hours": project[
+                    "billable_hours"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+                "non_billable_hours": project[
+                    "non_billable_hours"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+                "estimated_earnings": project[
+                    "estimated_earnings"
+                ].quantize(
+                    Decimal("0.01")
+                ),
+            }
+        )
+
+    project_results.sort(
+        key=lambda project: (
+            -float(project["total_hours"]),
+            project["name"],
+        )
+    )
+
+    return {
+        "total_projects": projects.count(),
+        "total_members": len(team_members),
+        "total_entries": total_entries,
+        "total_hours": total_hours.quantize(
+            Decimal("0.01")
+        ),
+        "billable_hours": billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "non_billable_hours": non_billable_hours.quantize(
+            Decimal("0.01")
+        ),
+        "estimated_earnings": total_earnings.quantize(
+            Decimal("0.01")
+        ),
+        "projects": project_results,
+        "team_members": team_members,
+        "recent_entries": entries[:10],
+    }

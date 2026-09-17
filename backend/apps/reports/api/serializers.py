@@ -87,7 +87,7 @@ class DailyReportEntrySerializer(
 ):
     """
     Individual time entry shown inside
-    the Daily Report.
+    reports.
     """
 
     project = serializers.CharField(
@@ -263,6 +263,7 @@ class MonthlyReportSerializer(
         many=True,
     )
 
+
 # ==========================================================
 # Project Report Serializers
 # ==========================================================
@@ -317,6 +318,7 @@ class ProjectReportSerializer(
             "hourly_rate": project.hourly_rate,
         }
 
+
 # ==========================================================
 # Client Report Serializer
 # ==========================================================
@@ -367,6 +369,7 @@ class ClientReportSerializer(
             "id": client.id,
             "name": client.name,
         }
+
 
 # ==========================================================
 # Dashboard Analytics Serializers
@@ -444,12 +447,15 @@ class DashboardAnalyticsSerializer(
         allow_null=True,
     )
 
+
 # ==========================================================
 # Productivity Analytics Serializer
 # ==========================================================
 
 
-class ProductivityAnalyticsSerializer(serializers.Serializer):
+class ProductivityAnalyticsSerializer(
+    serializers.Serializer,
+):
     """
     Serializer for dashboard productivity analytics.
     """
@@ -459,4 +465,131 @@ class ProductivityAnalyticsSerializer(serializers.Serializer):
     hours = serializers.DecimalField(
         max_digits=10,
         decimal_places=2,
+    )
+
+
+# ==========================================================
+# Team Report Serializers
+# ==========================================================
+
+
+class TeamMemberReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Reporting statistics for one team member.
+    """
+
+    id = serializers.IntegerField()
+
+    username = serializers.CharField()
+
+    first_name = serializers.CharField()
+
+    last_name = serializers.CharField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+
+class TeamProjectReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Reporting statistics for one managed project.
+    """
+
+    id = serializers.IntegerField()
+
+    name = serializers.CharField()
+
+    client = serializers.CharField()
+
+    status = serializers.CharField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+
+class TeamReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Serializer for manager team reports.
+    """
+
+    total_projects = serializers.IntegerField()
+
+    total_members = serializers.IntegerField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    projects = TeamProjectReportSerializer(
+        many=True,
+    )
+
+    team_members = TeamMemberReportSerializer(
+        many=True,
+    )
+
+    recent_entries = DailyReportEntrySerializer(
+        many=True,
     )

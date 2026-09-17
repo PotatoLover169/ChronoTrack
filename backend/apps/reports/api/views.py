@@ -7,6 +7,7 @@ from openpyxl.styles import Font
 
 from rest_framework import generics
 from rest_framework.permissions import (
+    BasePermission,
     IsAuthenticated,
 )
 from rest_framework.response import Response
@@ -21,6 +22,7 @@ from apps.reports.services import (
     get_client_report,
     get_dashboard_analytics,
     get_productivity_analytics,
+    get_team_report,
 )
 
 from .serializers import (
@@ -33,7 +35,35 @@ from .serializers import (
     ClientReportSerializer,
     DashboardAnalyticsSerializer,
     ProductivityAnalyticsSerializer,
+    TeamReportSerializer,
 )
+
+
+class IsManagerOrAdmin(
+    BasePermission,
+):
+    """
+    Allow only Managers and Admins to access
+    team-level reporting.
+    """
+
+    def has_permission(
+        self,
+        request,
+        view,
+    ):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.is_superuser:
+            return True
+
+        return request.user.groups.filter(
+            name__in=[
+                "Manager",
+                "Admin",
+            ]
+        ).exists()
 
 
 class ReportSummaryView(
@@ -43,15 +73,16 @@ class ReportSummaryView(
     Return a summary report for the authenticated user.
     """
 
-    serializer_class = (
-        ReportSummarySerializer
-    )
+    serializer_class = ReportSummarySerializer
 
     permission_classes = (
         IsAuthenticated,
     )
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         summary = get_report_summary(
             request.user,
         )
@@ -64,6 +95,7 @@ class ReportSummaryView(
             serializer.data,
         )
 
+
 class DailyReportView(
     generics.GenericAPIView,
 ):
@@ -71,9 +103,7 @@ class DailyReportView(
     Return today's report for the authenticated user.
     """
 
-    serializer_class = (
-        DailyReportSerializer
-    )
+    serializer_class = DailyReportSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -95,6 +125,7 @@ class DailyReportView(
             serializer.data,
         )
 
+
 class WeeklyReportView(
     generics.GenericAPIView,
 ):
@@ -102,9 +133,7 @@ class WeeklyReportView(
     Return this week's report for the authenticated user.
     """
 
-    serializer_class = (
-        WeeklyReportSerializer
-    )
+    serializer_class = WeeklyReportSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -126,6 +155,7 @@ class WeeklyReportView(
             serializer.data,
         )
 
+
 class MonthlyReportView(
     generics.GenericAPIView,
 ):
@@ -133,9 +163,7 @@ class MonthlyReportView(
     Return this month's report for the authenticated user.
     """
 
-    serializer_class = (
-        MonthlyReportSerializer
-    )
+    serializer_class = MonthlyReportSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -157,6 +185,7 @@ class MonthlyReportView(
             serializer.data,
         )
 
+
 class ProjectReportView(
     generics.GenericAPIView,
 ):
@@ -164,9 +193,7 @@ class ProjectReportView(
     Return report for a specific project.
     """
 
-    serializer_class = (
-        ProjectReportSerializer
-    )
+    serializer_class = ProjectReportSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -190,6 +217,7 @@ class ProjectReportView(
             serializer.data,
         )
 
+
 class ClientReportView(
     generics.GenericAPIView,
 ):
@@ -197,9 +225,7 @@ class ClientReportView(
     Return a report for a specific client.
     """
 
-    serializer_class = (
-        ClientReportSerializer
-    )
+    serializer_class = ClientReportSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -223,6 +249,7 @@ class ClientReportView(
             serializer.data,
         )
 
+
 class DashboardAnalyticsView(
     generics.GenericAPIView,
 ):
@@ -230,9 +257,7 @@ class DashboardAnalyticsView(
     Return dashboard analytics for the authenticated user.
     """
 
-    serializer_class = (
-        DashboardAnalyticsSerializer
-    )
+    serializer_class = DashboardAnalyticsSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -254,6 +279,7 @@ class DashboardAnalyticsView(
             serializer.data,
         )
 
+
 class ProductivityAnalyticsView(
     generics.GenericAPIView,
 ):
@@ -261,9 +287,7 @@ class ProductivityAnalyticsView(
     Return productivity analytics.
     """
 
-    serializer_class = (
-        ProductivityAnalyticsSerializer
-    )
+    serializer_class = ProductivityAnalyticsSerializer
 
     permission_classes = (
         IsAuthenticated,
@@ -286,6 +310,39 @@ class ProductivityAnalyticsView(
             serializer.data,
         )
 
+
+class TeamReportView(
+    generics.GenericAPIView,
+):
+    """
+    Return team reporting data for projects
+    managed by the authenticated user.
+    """
+
+    serializer_class = TeamReportSerializer
+
+    permission_classes = (
+        IsAuthenticated,
+        IsManagerOrAdmin,
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        report = get_team_report(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            report,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+
 class TimesheetReportView(
     generics.GenericAPIView,
 ):
@@ -293,15 +350,16 @@ class TimesheetReportView(
     Return completed time entries.
     """
 
-    serializer_class = (
-        TimesheetReportSerializer
-    )
+    serializer_class = TimesheetReportSerializer
 
     permission_classes = (
         IsAuthenticated,
     )
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         start_date = request.query_params.get(
             "start_date",
         )
@@ -322,6 +380,11 @@ class TimesheetReportView(
             "billable",
         )
 
+        ordering = request.query_params.get(
+            "ordering",
+            "-start_time",
+        )
+
         if billable is not None:
             billable = (
                 billable.lower() == "true"
@@ -334,6 +397,7 @@ class TimesheetReportView(
             project_id=project_id,
             client_id=client_id,
             billable=billable,
+            ordering=ordering,
         )
 
         serializer = self.get_serializer(
@@ -344,6 +408,7 @@ class TimesheetReportView(
         return Response(
             serializer.data,
         )
+
 
 class TimesheetCSVExportView(
     generics.GenericAPIView,
@@ -356,26 +421,28 @@ class TimesheetCSVExportView(
         IsAuthenticated,
     )
 
-    def get(self, request):
-
+    def get(
+        self,
+        request,
+    ):
         start_date = request.GET.get(
-            "start_date"
+            "start_date",
         )
 
         end_date = request.GET.get(
-            "end_date"
+            "end_date",
         )
 
         project_id = request.GET.get(
-            "project"
+            "project",
         )
 
         client_id = request.GET.get(
-            "client"
+            "client",
         )
 
         billable = request.GET.get(
-            "billable"
+            "billable",
         )
 
         ordering = request.GET.get(
@@ -428,17 +495,32 @@ class TimesheetCSVExportView(
 
             writer.writerow([
                 entry.project.name,
-                entry.task.title if entry.task else "",
-                entry.start_time.strftime("%Y-%m-%d"),
-                entry.start_time.strftime("%H:%M"),
-                entry.end_time.strftime("%H:%M") if entry.end_time else "",
-                str(entry.duration)[:-3] if entry.duration else "",
-                "Yes" if entry.billable else "No",
+                entry.task.title
+                if entry.task
+                else "",
+                entry.start_time.strftime(
+                    "%Y-%m-%d"
+                ),
+                entry.start_time.strftime(
+                    "%H:%M"
+                ),
+                entry.end_time.strftime(
+                    "%H:%M"
+                )
+                if entry.end_time
+                else "",
+                str(entry.duration)[:-3]
+                if entry.duration
+                else "",
+                "Yes"
+                if entry.billable
+                else "No",
                 f"{entry.hourly_rate:.2f}",
                 f"{entry.earnings:.2f}",
             ])
 
         return response
+
 
 class TimesheetExcelExportView(
     generics.GenericAPIView,
@@ -451,8 +533,10 @@ class TimesheetExcelExportView(
         IsAuthenticated,
     )
 
-    def get(self, request):
-
+    def get(
+        self,
+        request,
+    ):
         start_date = request.GET.get(
             "start_date",
         )
@@ -514,20 +598,34 @@ class TimesheetExcelExportView(
         worksheet.append(headers)
 
         for cell in worksheet[1]:
-            cell.font = Font(bold=True)
+            cell.font = Font(
+                bold=True,
+            )
 
         for entry in entries:
 
             worksheet.append([
                 entry.project.name,
-                entry.task.title if entry.task else "",
-                entry.start_time.strftime("%Y-%m-%d"),
-                entry.start_time.strftime("%H:%M"),
-                entry.end_time.strftime("%H:%M")
-                if entry.end_time else "",
+                entry.task.title
+                if entry.task
+                else "",
+                entry.start_time.strftime(
+                    "%Y-%m-%d"
+                ),
+                entry.start_time.strftime(
+                    "%H:%M"
+                ),
+                entry.end_time.strftime(
+                    "%H:%M"
+                )
+                if entry.end_time
+                else "",
                 str(entry.duration)[:-3]
-                if entry.duration else "",
-                "Yes" if entry.billable else "No",
+                if entry.duration
+                else "",
+                "Yes"
+                if entry.billable
+                else "No",
                 float(entry.hourly_rate),
                 float(entry.earnings),
             ])
