@@ -23,6 +23,7 @@ from apps.reports.services import (
     get_dashboard_analytics,
     get_productivity_analytics,
     get_team_report,
+    get_organization_report,
 )
 
 from .serializers import (
@@ -36,6 +37,7 @@ from .serializers import (
     DashboardAnalyticsSerializer,
     ProductivityAnalyticsSerializer,
     TeamReportSerializer,
+    OrganizationReportSerializer,
 )
 
 
@@ -63,6 +65,30 @@ class IsManagerOrAdmin(
                 "Manager",
                 "Admin",
             ]
+        ).exists()
+
+
+class IsAdminOnly(
+    BasePermission,
+):
+    """
+    Allow only Admin users to access
+    organization-wide reporting.
+    """
+
+    def has_permission(
+        self,
+        request,
+        view,
+    ):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.is_superuser:
+            return True
+
+        return request.user.groups.filter(
+            name="Admin",
         ).exists()
 
 
@@ -331,6 +357,39 @@ class TeamReportView(
         request,
     ):
         report = get_team_report(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            report,
+        )
+
+        return Response(
+            serializer.data,
+        )
+
+
+class OrganizationReportView(
+    generics.GenericAPIView,
+):
+    """
+    Return organization-wide reporting data.
+
+    Only Admin users can access this endpoint.
+    """
+
+    serializer_class = OrganizationReportSerializer
+
+    permission_classes = (
+        IsAuthenticated,
+        IsAdminOnly,
+    )
+
+    def get(
+        self,
+        request,
+    ):
+        report = get_organization_report(
             user=request.user,
         )
 

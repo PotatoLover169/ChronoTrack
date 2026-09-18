@@ -13,6 +13,7 @@ from .views import (
     DashboardAnalyticsView,
     ProductivityAnalyticsView,
     TeamReportView,
+    OrganizationReportView,
 )
 
 
@@ -63,6 +64,12 @@ urlpatterns = [
         "team/",
         TeamReportView.as_view(),
         name="team-report",
+    ),
+
+    path(
+        "organization/",
+        OrganizationReportView.as_view(),
+        name="organization-report",
     ),
 
     path(

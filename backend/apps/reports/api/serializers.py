@@ -7,11 +7,8 @@ class ReportSummarySerializer(
     serializers.Serializer,
 ):
     total_entries = serializers.IntegerField()
-
     completed_entries = serializers.IntegerField()
-
     billable_entries = serializers.IntegerField()
-
     non_billable_entries = serializers.IntegerField()
 
     total_duration_hours = serializers.FloatField()
@@ -28,9 +25,7 @@ class TimesheetReportSerializer(
     serializers.ModelSerializer,
 ):
     project = serializers.SerializerMethodField()
-
     task = serializers.SerializerMethodField()
-
     date = serializers.SerializerMethodField()
 
     earnings = serializers.DecimalField(
@@ -191,7 +186,6 @@ class WeeklyReportSerializer(
     """
 
     week_start = serializers.DateField()
-
     week_end = serializers.DateField()
 
     total_entries = serializers.IntegerField()
@@ -234,7 +228,6 @@ class MonthlyReportSerializer(
     """
 
     month = serializers.CharField()
-
     year = serializers.IntegerField()
 
     total_entries = serializers.IntegerField()
@@ -436,7 +429,6 @@ class DashboardAnalyticsSerializer(
     )
 
     active_projects = serializers.IntegerField()
-
     completed_projects = serializers.IntegerField()
 
     top_project = DashboardProjectSerializer(
@@ -481,11 +473,8 @@ class TeamMemberReportSerializer(
     """
 
     id = serializers.IntegerField()
-
     username = serializers.CharField()
-
     first_name = serializers.CharField()
-
     last_name = serializers.CharField()
 
     total_entries = serializers.IntegerField()
@@ -519,11 +508,8 @@ class TeamProjectReportSerializer(
     """
 
     id = serializers.IntegerField()
-
     name = serializers.CharField()
-
     client = serializers.CharField()
-
     status = serializers.CharField()
 
     total_entries = serializers.IntegerField()
@@ -557,9 +543,7 @@ class TeamReportSerializer(
     """
 
     total_projects = serializers.IntegerField()
-
     total_members = serializers.IntegerField()
-
     total_entries = serializers.IntegerField()
 
     total_hours = serializers.DecimalField(
@@ -591,5 +575,208 @@ class TeamReportSerializer(
     )
 
     recent_entries = DailyReportEntrySerializer(
+        many=True,
+    )
+
+# ==========================================================
+# Organization Report Serializers
+# ==========================================================
+
+
+class OrganizationRecentEntrySerializer(
+    serializers.ModelSerializer,
+):
+    """
+    Individual time entry shown in organization reports.
+
+    Includes the user who recorded the entry.
+    """
+
+    owner = serializers.SerializerMethodField()
+
+    project = serializers.CharField(
+        source="project.name",
+        read_only=True,
+    )
+
+    task = serializers.SerializerMethodField()
+
+    duration_hours = serializers.SerializerMethodField()
+
+    earnings = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        read_only=True,
+    )
+
+    class Meta:
+        model = TimeEntry
+
+        fields = (
+            "id",
+            "owner",
+            "project",
+            "task",
+            "description",
+            "start_time",
+            "end_time",
+            "duration_hours",
+            "billable",
+            "earnings",
+        )
+
+    def get_owner(
+        self,
+        obj,
+    ):
+        return {
+            "id": obj.owner.id,
+            "username": obj.owner.username,
+            "first_name": obj.owner.first_name,
+            "last_name": obj.owner.last_name,
+        }
+
+    def get_task(
+        self,
+        obj,
+    ):
+        if obj.task:
+            return obj.task.title
+
+        return None
+
+    def get_duration_hours(
+        self,
+        obj,
+    ):
+        if not obj.duration:
+            return 0
+
+        return round(
+            obj.duration.total_seconds() / 3600,
+            2,
+        )
+
+
+class OrganizationMemberReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Reporting statistics for one organization member.
+    """
+
+    id = serializers.IntegerField()
+
+    username = serializers.CharField()
+
+    first_name = serializers.CharField()
+
+    last_name = serializers.CharField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+
+class OrganizationProjectReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Reporting statistics for one organization project.
+    """
+
+    id = serializers.IntegerField()
+
+    name = serializers.CharField()
+
+    client = serializers.CharField()
+
+    owner = serializers.DictField()
+
+    status = serializers.CharField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+
+class OrganizationReportSerializer(
+    serializers.Serializer,
+):
+    """
+    Serializer for organization-wide Admin reports.
+    """
+
+    total_projects = serializers.IntegerField()
+
+    total_members = serializers.IntegerField()
+
+    total_entries = serializers.IntegerField()
+
+    total_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    non_billable_hours = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    estimated_earnings = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    projects = OrganizationProjectReportSerializer(
+        many=True,
+    )
+
+    team_members = OrganizationMemberReportSerializer(
+        many=True,
+    )
+
+    recent_entries = OrganizationRecentEntrySerializer(
         many=True,
     )
