@@ -4,6 +4,10 @@ import {
   useState,
 } from "react";
 
+import { useContext } from "react";
+
+import { AuthContext } from "../../../context/AuthContextValue";
+
 import api from "../../../services/api";
 
 import "../../../styles/reports.css";
@@ -70,6 +74,8 @@ function getDayLabel(date) {
 
 
 function Reports() {
+  const { user } = useContext(AuthContext);
+
   const [report, setReport] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -79,14 +85,40 @@ function Reports() {
   const [retryCount, setRetryCount] = useState(0);
 
 
+  const role = user?.role || "Employee";
+
+
+  const isEmployee = role === "Employee";
+
+  const isManager = role === "Manager";
+
+  const isAdmin = role === "Admin";
+
+
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
     let cancelled = false;
 
-    const fetchWeeklyReport = async () => {
+
+    const fetchReport = async () => {
       try {
-        const response = await api.get(
-          "reports/me/weekly/",
-        );
+        let endpoint = "reports/me/weekly/";
+
+
+        if (isManager) {
+          endpoint = "reports/team/";
+        }
+
+        if (isAdmin) {
+          endpoint = "reports/organization/";
+        }
+
+
+        const response = await api.get(endpoint);
+
 
         if (!cancelled) {
           setReport(response.data);
@@ -95,9 +127,10 @@ function Reports() {
         }
       } catch (requestError) {
         console.error(
-          "Failed to load weekly report:",
+          "Failed to load report:",
           requestError,
         );
+
 
         if (!cancelled) {
           setError(
@@ -110,12 +143,19 @@ function Reports() {
       }
     };
 
-    fetchWeeklyReport();
+
+    fetchReport();
+
 
     return () => {
       cancelled = true;
     };
-  }, [retryCount]);
+  }, [
+    user,
+    isManager,
+    isAdmin,
+    retryCount,
+  ]);
 
 
   const dailyBreakdown = useMemo(() => {
@@ -123,25 +163,31 @@ function Reports() {
       return [];
     }
 
+
     const grouped = {};
+
 
     report.entries.forEach((entry) => {
       const date = entry.start_time
         ? entry.start_time.slice(0, 10)
         : null;
 
+
       if (!date) {
         return;
       }
+
 
       if (!grouped[date]) {
         grouped[date] = 0;
       }
 
+
       grouped[date] += Number(
         entry.duration_hours || 0,
       );
     });
+
 
     return Object.entries(grouped)
       .sort(
@@ -163,6 +209,7 @@ function Reports() {
     if (!dailyBreakdown.length) {
       return 1;
     }
+
 
     return Math.max(
       ...dailyBreakdown.map(
@@ -192,14 +239,27 @@ function Reports() {
 
           <div>
             <p className="reports-eyebrow">
-              Personal reports
+              {isAdmin
+                ? "Organization reports"
+                : isManager
+                  ? "Team reports"
+                  : "Personal reports"}
             </p>
 
-            <h1>My Reports</h1>
+            <h1>
+              {isAdmin
+                ? "Organization Reports"
+                : isManager
+                  ? "Team Reports"
+                  : "My Reports"}
+            </h1>
 
             <p>
-              Review your tracked time and
-              work activity.
+              {isAdmin
+                ? "Review organization-wide time and productivity data."
+                : isManager
+                  ? "Review team time and work activity."
+                  : "Review your tracked time and work activity."}
             </p>
           </div>
 
@@ -246,13 +306,23 @@ function Reports() {
 
           <div>
             <p className="reports-eyebrow">
-              Personal reports
+              {isAdmin
+                ? "Organization reports"
+                : isManager
+                  ? "Team reports"
+                  : "Personal reports"}
             </p>
 
-            <h1>My Reports</h1>
+            <h1>
+              {isAdmin
+                ? "Organization Reports"
+                : isManager
+                  ? "Team Reports"
+                  : "My Reports"}
+            </h1>
 
             <p>
-              Review your tracked time and
+              Review tracked time and
               work activity.
             </p>
           </div>
@@ -269,6 +339,465 @@ function Reports() {
   }
 
 
+  /*
+   * ---------------------------------------------------------
+   * EMPLOYEE REPORT
+   * ---------------------------------------------------------
+   */
+
+  if (isEmployee) {
+    const totalHours =
+      Number(report.total_hours || 0);
+
+    const billableHours =
+      Number(report.billable_hours || 0);
+
+    const nonBillableHours =
+      Number(
+        report.non_billable_hours || 0,
+      );
+
+
+    const billablePercentage =
+      totalHours > 0
+        ? Math.min(
+            100,
+            (billableHours / totalHours) *
+              100,
+          )
+        : 0;
+
+
+    const nonBillablePercentage =
+      totalHours > 0
+        ? Math.min(
+            100,
+            (nonBillableHours / totalHours) *
+              100,
+          )
+        : 0;
+
+
+    return (
+      <section className="reports-page">
+
+        <header className="reports-header">
+
+          <div>
+            <p className="reports-eyebrow">
+              Personal reports
+            </p>
+
+            <h1>
+              My Reports
+            </h1>
+
+            <p>
+              Review your tracked time and
+              work activity for the current
+              week.
+            </p>
+          </div>
+
+
+          <div className="reports-period">
+
+            <span>
+              Reporting period
+            </span>
+
+            <strong>
+              {formatDate(report.week_start)}
+              {" — "}
+              {formatDate(report.week_end)}
+            </strong>
+
+          </div>
+
+        </header>
+
+
+        <div className="reports-summary">
+
+          <article className="report-stat">
+
+            <span className="report-stat-label">
+              Total tracked
+            </span>
+
+            <strong className="report-stat-value">
+              {formatHours(totalHours)}
+            </strong>
+
+            <span className="report-stat-meta">
+              {report.total_entries || 0} completed entries
+            </span>
+
+          </article>
+
+
+          <article className="report-stat">
+
+            <span className="report-stat-label">
+              Billable
+            </span>
+
+            <strong className="report-stat-value">
+              {formatHours(billableHours)}
+            </strong>
+
+            <span className="report-stat-meta">
+              {billablePercentage.toFixed(0)}% of tracked time
+            </span>
+
+          </article>
+
+
+          <article className="report-stat">
+
+            <span className="report-stat-label">
+              Non-billable
+            </span>
+
+            <strong className="report-stat-value">
+              {formatHours(nonBillableHours)}
+            </strong>
+
+            <span className="report-stat-meta">
+              Internal or non-billable work
+            </span>
+
+          </article>
+
+
+          <article className="report-stat">
+
+            <span className="report-stat-label">
+              Estimated earnings
+            </span>
+
+            <strong className="report-stat-value">
+              {formatCurrency(
+                report.total_earnings,
+              )}
+            </strong>
+
+            <span className="report-stat-meta">
+              From billable time
+            </span>
+
+          </article>
+
+        </div>
+
+
+        <div className="reports-grid">
+
+          <section className="reports-panel">
+
+            <div className="reports-panel-header">
+
+              <div>
+                <h2>
+                  Weekly activity
+                </h2>
+
+                <p>
+                  Hours tracked by day.
+                </p>
+              </div>
+
+            </div>
+
+
+            {dailyBreakdown.length === 0 ? (
+
+              <div className="reports-panel-empty">
+                No completed time entries
+                for this week.
+              </div>
+
+            ) : (
+
+              <div className="weekly-chart">
+
+                {dailyBreakdown.map(
+                  (item) => (
+                    <div
+                      className="weekly-chart-column"
+                      key={item.date}
+                    >
+
+                      <div className="weekly-chart-value">
+                        {item.hours.toFixed(1)}h
+                      </div>
+
+
+                      <div className="weekly-chart-track">
+
+                        <div
+                          className="weekly-chart-bar"
+                          style={{
+                            height: `${Math.max(
+                              4,
+                              (
+                                item.hours /
+                                maximumDailyHours
+                              ) * 100,
+                            )}%`,
+                          }}
+                        />
+
+                      </div>
+
+
+                      <span className="weekly-chart-label">
+                        {item.label}
+                      </span>
+
+                    </div>
+                  ),
+                )}
+
+              </div>
+
+            )}
+
+          </section>
+
+
+          <section className="reports-panel">
+
+            <div className="reports-panel-header">
+
+              <div>
+                <h2>
+                  Time breakdown
+                </h2>
+
+                <p>
+                  Billable versus
+                  non-billable time.
+                </p>
+              </div>
+
+            </div>
+
+
+            <div className="time-breakdown">
+
+              <div className="breakdown-row">
+
+                <div className="breakdown-heading">
+
+                  <span>
+                    Billable
+                  </span>
+
+                  <strong>
+                    {formatHours(
+                      billableHours,
+                    )}
+                  </strong>
+
+                </div>
+
+
+                <div className="breakdown-track">
+
+                  <div
+                    className="breakdown-fill breakdown-fill-billable"
+                    style={{
+                      width: `${billablePercentage}%`,
+                    }}
+                  />
+
+                </div>
+
+              </div>
+
+
+              <div className="breakdown-row">
+
+                <div className="breakdown-heading">
+
+                  <span>
+                    Non-billable
+                  </span>
+
+                  <strong>
+                    {formatHours(
+                      nonBillableHours,
+                    )}
+                  </strong>
+
+                </div>
+
+
+                <div className="breakdown-track">
+
+                  <div
+                    className="breakdown-fill breakdown-fill-non-billable"
+                    style={{
+                      width: `${nonBillablePercentage}%`,
+                    }}
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        </div>
+
+
+        <section className="reports-panel reports-entries-panel">
+
+          <div className="reports-panel-header">
+
+            <div>
+              <h2>
+                Time entries
+              </h2>
+
+              <p>
+                Completed work recorded
+                during this reporting period.
+              </p>
+            </div>
+
+
+            <span className="reports-entry-count">
+              {report.entries?.length || 0} entries
+            </span>
+
+          </div>
+
+
+          {report.entries?.length ? (
+
+            <div className="reports-table-wrapper">
+
+              <table className="reports-table">
+
+                <thead>
+
+                  <tr>
+                    <th>Date</th>
+                    <th>Project</th>
+                    <th>Task</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Type</th>
+                    <th>Earnings</th>
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {report.entries.map(
+                    (entry) => (
+                      <tr key={entry.id}>
+
+                        <td>
+                          {formatDate(
+                            entry.start_time,
+                          )}
+                        </td>
+
+
+                        <td>
+                          <strong>
+                            {entry.project || "—"}
+                          </strong>
+                        </td>
+
+
+                        <td>
+                          {entry.task || "No task"}
+                        </td>
+
+
+                        <td>
+                          <span className="reports-time-range">
+                            {formatTime(
+                              entry.start_time,
+                            )}
+                            {" — "}
+                            {formatTime(
+                              entry.end_time,
+                            )}
+                          </span>
+                        </td>
+
+
+                        <td>
+                          <strong>
+                            {formatHours(
+                              entry.duration_hours,
+                            )}
+                          </strong>
+                        </td>
+
+
+                        <td>
+                          <span
+                            className={
+                              entry.billable
+                                ? "report-badge report-badge-billable"
+                                : "report-badge report-badge-neutral"
+                            }
+                          >
+                            {entry.billable
+                              ? "Billable"
+                              : "Non-billable"}
+                          </span>
+                        </td>
+
+
+                        <td>
+                          {formatCurrency(
+                            entry.earnings,
+                          )}
+                        </td>
+
+                      </tr>
+                    ),
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          ) : (
+
+            <div className="reports-panel-empty">
+              No completed time entries
+              for this week.
+            </div>
+
+          )}
+
+        </section>
+
+      </section>
+    );
+  }
+
+
+  /*
+   * ---------------------------------------------------------
+   * MANAGER / ADMIN REPORT
+   * ---------------------------------------------------------
+   */
+
   const totalHours =
     Number(report.total_hours || 0);
 
@@ -276,75 +805,41 @@ function Reports() {
     Number(report.billable_hours || 0);
 
   const nonBillableHours =
-    Number(
-      report.non_billable_hours || 0,
-    );
+    Number(report.non_billable_hours || 0);
 
 
-  const billablePercentage =
-    totalHours > 0
-      ? Math.min(
-          100,
-          (billableHours / totalHours) *
-            100,
-        )
-      : 0;
+  const reportTitle = isAdmin
+    ? "Organization Reports"
+    : "Team Reports";
 
-
-  const nonBillablePercentage =
-    totalHours > 0
-      ? Math.min(
-          100,
-          (nonBillableHours / totalHours) *
-            100,
-        )
-      : 0;
+  const reportEyebrow = isAdmin
+    ? "Organization reports"
+    : "Team reports";
 
 
   return (
     <section className="reports-page">
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
       <header className="reports-header">
 
         <div>
           <p className="reports-eyebrow">
-            Personal reports
+            {reportEyebrow}
           </p>
 
-          <h1>My Reports</h1>
+          <h1>
+            {reportTitle}
+          </h1>
 
           <p>
-            Review your tracked time and
-            work activity for the current
-            week.
+            {isAdmin
+              ? "Review organization-wide time and work activity."
+              : "Review team time and work activity."}
           </p>
-        </div>
-
-
-        <div className="reports-period">
-
-          <span>
-            Reporting period
-          </span>
-
-          <strong>
-            {formatDate(report.week_start)}
-            {" — "}
-            {formatDate(report.week_end)}
-          </strong>
-
         </div>
 
       </header>
 
-
-      {/* =====================================================
-          SUMMARY
-      ===================================================== */}
 
       <div className="reports-summary">
 
@@ -376,7 +871,7 @@ function Reports() {
           </strong>
 
           <span className="report-stat-meta">
-            {billablePercentage.toFixed(0)}% of tracked time
+            Billable team time
           </span>
 
         </article>
@@ -407,7 +902,7 @@ function Reports() {
 
           <strong className="report-stat-value">
             {formatCurrency(
-              report.total_earnings,
+              report.estimated_earnings,
             )}
           </strong>
 
@@ -420,13 +915,7 @@ function Reports() {
       </div>
 
 
-      {/* =====================================================
-          REPORT CONTENT
-      ===================================================== */}
-
       <div className="reports-grid">
-
-        {/* Weekly activity */}
 
         <section className="reports-panel">
 
@@ -434,66 +923,111 @@ function Reports() {
 
             <div>
               <h2>
-                Weekly activity
+                {isAdmin
+                  ? "Projects"
+                  : "Team projects"}
               </h2>
 
               <p>
-                Hours tracked by day.
+                {isAdmin
+                  ? "Tracked time across organization projects."
+                  : "Tracked time across your projects."}
               </p>
             </div>
 
           </div>
 
 
-          {dailyBreakdown.length === 0 ? (
+          {report.projects?.length ? (
 
-            <div className="reports-panel-empty">
-              No completed time entries
-              for this week.
+            <div className="reports-table-wrapper">
+
+              <table className="reports-table">
+
+                <thead>
+
+                  <tr>
+                    <th>Project</th>
+
+                    {isAdmin && (
+                      <th>Owner</th>
+                    )}
+
+                    <th>Client</th>
+                    <th>Status</th>
+                    <th>Hours</th>
+                    <th>Billable</th>
+                    <th>Earnings</th>
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {report.projects.map(
+                    (project) => (
+                      <tr key={project.id}>
+
+                        <td>
+                          <strong>
+                            {project.name}
+                          </strong>
+                        </td>
+
+
+                        {isAdmin && (
+                          <td>
+                            {project.owner?.username ||
+                              "—"}
+                          </td>
+                        )}
+
+
+                        <td>
+                          {project.client || "—"}
+                        </td>
+
+
+                        <td>
+                          {project.status || "—"}
+                        </td>
+
+
+                        <td>
+                          {formatHours(
+                            project.total_hours,
+                          )}
+                        </td>
+
+
+                        <td>
+                          {formatHours(
+                            project.billable_hours,
+                          )}
+                        </td>
+
+
+                        <td>
+                          {formatCurrency(
+                            project.estimated_earnings,
+                          )}
+                        </td>
+
+                      </tr>
+                    ),
+                  )}
+
+                </tbody>
+
+              </table>
+
             </div>
 
           ) : (
 
-            <div className="weekly-chart">
-
-              {dailyBreakdown.map(
-                (item) => (
-                  <div
-                    className="weekly-chart-column"
-                    key={item.date}
-                  >
-
-                    <div className="weekly-chart-value">
-                      {item.hours.toFixed(1)}h
-                    </div>
-
-
-                    <div className="weekly-chart-track">
-
-                      <div
-                        className="weekly-chart-bar"
-                        style={{
-                          height: `${Math.max(
-                            4,
-                            (
-                              item.hours /
-                              maximumDailyHours
-                            ) * 100,
-                          )}%`,
-                        }}
-                      />
-
-                    </div>
-
-
-                    <span className="weekly-chart-label">
-                      {item.label}
-                    </span>
-
-                  </div>
-                ),
-              )}
-
+            <div className="reports-panel-empty">
+              No project report data available.
             </div>
 
           )}
@@ -501,99 +1035,107 @@ function Reports() {
         </section>
 
 
-        {/* Time breakdown */}
-
         <section className="reports-panel">
 
           <div className="reports-panel-header">
 
             <div>
               <h2>
-                Time breakdown
+                {isAdmin
+                  ? "Organization members"
+                  : "Team members"}
               </h2>
 
               <p>
-                Billable versus
-                non-billable time.
+                Tracked time by member.
               </p>
             </div>
 
           </div>
 
 
-          <div className="time-breakdown">
+          {report.team_members?.length ? (
 
-            <div className="breakdown-row">
+            <div className="reports-table-wrapper">
 
-              <div className="breakdown-heading">
+              <table className="reports-table">
 
-                <span>
-                  Billable
-                </span>
+                <thead>
 
-                <strong>
-                  {formatHours(
-                    billableHours,
+                  <tr>
+                    <th>Member</th>
+                    <th>Entries</th>
+                    <th>Hours</th>
+                    <th>Billable</th>
+                    <th>Earnings</th>
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {report.team_members.map(
+                    (member) => (
+                      <tr key={member.id}>
+
+                        <td>
+                          <strong>
+                            {member.first_name ||
+                              member.last_name
+                              ? `${member.first_name} ${member.last_name}`.trim()
+                              : member.username}
+                          </strong>
+                        </td>
+
+
+                        <td>
+                          {member.total_entries || 0}
+                        </td>
+
+
+                        <td>
+                          {formatHours(
+                            member.total_hours,
+                          )}
+                        </td>
+
+
+                        <td>
+                          {formatHours(
+                            member.billable_hours,
+                          )}
+                        </td>
+
+
+                        <td>
+                          {formatCurrency(
+                            member.estimated_earnings,
+                          )}
+                        </td>
+
+                      </tr>
+                    ),
                   )}
-                </strong>
 
-              </div>
+                </tbody>
 
-
-              <div className="breakdown-track">
-
-                <div
-                  className="breakdown-fill breakdown-fill-billable"
-                  style={{
-                    width: `${billablePercentage}%`,
-                  }}
-                />
-
-              </div>
+              </table>
 
             </div>
 
+          ) : (
 
-            <div className="breakdown-row">
-
-              <div className="breakdown-heading">
-
-                <span>
-                  Non-billable
-                </span>
-
-                <strong>
-                  {formatHours(
-                    nonBillableHours,
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="breakdown-track">
-
-                <div
-                  className="breakdown-fill breakdown-fill-non-billable"
-                  style={{
-                    width: `${nonBillablePercentage}%`,
-                  }}
-                />
-
-              </div>
-
+            <div className="reports-panel-empty">
+              No member report data available.
             </div>
 
-          </div>
+          )}
 
         </section>
 
       </div>
 
-
-      {/* =====================================================
-          TIME ENTRIES
-      ===================================================== */}
 
       <section className="reports-panel reports-entries-panel">
 
@@ -601,24 +1143,24 @@ function Reports() {
 
           <div>
             <h2>
-              Time entries
+              Recent time entries
             </h2>
 
             <p>
-              Completed work recorded
-              during this reporting period.
+              Recently completed work recorded
+              by the {isAdmin ? "organization" : "team"}.
             </p>
           </div>
 
 
           <span className="reports-entry-count">
-            {report.entries?.length || 0} entries
+            {report.recent_entries?.length || 0} entries
           </span>
 
         </div>
 
 
-        {report.entries?.length ? (
+        {report.recent_entries?.length ? (
 
           <div className="reports-table-wrapper">
 
@@ -627,33 +1169,18 @@ function Reports() {
               <thead>
 
                 <tr>
-                  <th>
-                    Date
-                  </th>
 
-                  <th>
-                    Project
-                  </th>
+                  {isAdmin && (
+                    <th>Member</th>
+                  )}
 
-                  <th>
-                    Task
-                  </th>
+                  <th>Date</th>
+                  <th>Project</th>
+                  <th>Task</th>
+                  <th>Duration</th>
+                  <th>Type</th>
+                  <th>Earnings</th>
 
-                  <th>
-                    Time
-                  </th>
-
-                  <th>
-                    Duration
-                  </th>
-
-                  <th>
-                    Type
-                  </th>
-
-                  <th>
-                    Earnings
-                  </th>
                 </tr>
 
               </thead>
@@ -661,9 +1188,19 @@ function Reports() {
 
               <tbody>
 
-                {report.entries.map(
+                {report.recent_entries.map(
                   (entry) => (
                     <tr key={entry.id}>
+
+                      {isAdmin && (
+                        <td>
+                          <strong>
+                            {entry.owner?.username ||
+                              "—"}
+                          </strong>
+                        </td>
+                      )}
+
 
                       <td>
                         {formatDate(
@@ -685,33 +1222,13 @@ function Reports() {
 
 
                       <td>
-                        <span className="reports-time-range">
-
-                          {formatTime(
-                            entry.start_time,
-                          )}
-
-                          {" — "}
-
-                          {formatTime(
-                            entry.end_time,
-                          )}
-
-                        </span>
+                        {formatHours(
+                          entry.duration_hours,
+                        )}
                       </td>
 
 
                       <td>
-                        <strong>
-                          {formatHours(
-                            entry.duration_hours,
-                          )}
-                        </strong>
-                      </td>
-
-
-                      <td>
-
                         <span
                           className={
                             entry.billable
@@ -723,7 +1240,6 @@ function Reports() {
                             ? "Billable"
                             : "Non-billable"}
                         </span>
-
                       </td>
 
 
@@ -746,8 +1262,7 @@ function Reports() {
         ) : (
 
           <div className="reports-panel-empty">
-            No completed time entries
-            for this week.
+            No recent completed entries available.
           </div>
 
         )}
