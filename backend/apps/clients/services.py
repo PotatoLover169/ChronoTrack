@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+from django.db import models
+
 from apps.clients.models import Client
 from apps.projects.models import Project
 from apps.tasks.models import Task
@@ -9,6 +11,38 @@ from apps.tracker.models import (
 )
 
 
+def is_manager_or_admin(user):
+    return (
+        user.is_superuser
+        or user.groups.filter(
+            name__in=["Admin", "Manager"]
+        ).exists()
+    )
+
+
+def get_accessible_projects(
+    *,
+    user,
+    client,
+):
+    """
+    Return projects for the selected client that the user
+    is allowed to access.
+    """
+
+    if is_manager_or_admin(user):
+        return Project.objects.filter(
+            client=client,
+        )
+
+    return Project.objects.filter(
+        client=client,
+    ).filter(
+        models.Q(owner=user)
+        | models.Q(members=user)
+    ).distinct()
+
+
 def get_client_dashboard(
     *,
     user,
@@ -16,27 +50,43 @@ def get_client_dashboard(
 ):
     """
     Return dashboard statistics for a client.
+
+    Managers and Admins:
+        - Can view organization-wide statistics for the client.
+
+    Employees:
+        - Can view statistics for projects they own or
+          are assigned to.
     """
 
-    client = Client.objects.get(
-        id=client_id,
-        owner=user,
-    )
+    if is_manager_or_admin(user):
+        client = Client.objects.get(
+            id=client_id,
+        )
+    else:
+        client = Client.objects.filter(
+            id=client_id,
+        ).filter(
+            models.Q(projects__owner=user)
+            | models.Q(projects__members=user)
+            | models.Q(owner=user)
+        ).distinct().first()
 
-    projects = Project.objects.filter(
-        owner=user,
+        if not client:
+            raise Client.DoesNotExist
+
+    projects = get_accessible_projects(
+        user=user,
         client=client,
     )
 
     tasks = Task.objects.filter(
-        owner=user,
-        project__client=client,
+        project__in=projects,
     )
 
     entries = (
         TimeEntry.objects.filter(
-            owner=user,
-            project__client=client,
+            project__in=projects,
             status=TimeEntryStatus.COMPLETED,
         )
         .select_related(
@@ -69,7 +119,6 @@ def get_client_dashboard(
     total_earnings = Decimal("0.00")
 
     for entry in entries:
-
         if not entry.duration:
             continue
 
