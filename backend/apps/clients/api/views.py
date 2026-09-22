@@ -2,7 +2,10 @@ from django.db import models
 
 from rest_framework import generics
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    BasePermission,
+    IsAuthenticated,
+)
 from rest_framework.response import Response
 
 from apps.clients.models import Client
@@ -23,21 +26,52 @@ def is_manager_or_admin(user):
     )
 
 
+class IsManagerOrAdminForMutation(
+    BasePermission,
+):
+    """
+    Allow authenticated users to read clients.
+
+    Only Managers and Admins can create,
+    update, or delete clients.
+    """
+
+    def has_permission(
+        self,
+        request,
+        view,
+    ):
+        if request.method in (
+            "GET",
+            "HEAD",
+            "OPTIONS",
+        ):
+            return True
+
+        return is_manager_or_admin(
+            request.user,
+        )
+
+
 class ClientListCreateAPIView(
     generics.ListCreateAPIView,
 ):
     serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManagerOrAdminForMutation,
+    ]
 
     def get_queryset(self):
         user = self.request.user
 
-        # Managers and Admins can manage all clients.
+        # Managers and Admins can view all clients.
         if is_manager_or_admin(user):
             return Client.objects.all()
 
-        # Employees can view clients connected to projects
-        # they own or are assigned to.
+        # Employees can view clients connected
+        # to projects they own or are assigned to.
         return Client.objects.filter(
             models.Q(projects__owner=user)
             | models.Q(projects__members=user)
@@ -54,12 +88,16 @@ class ClientRetrieveUpdateDestroyAPIView(
     generics.RetrieveUpdateDestroyAPIView,
 ):
     serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsManagerOrAdminForMutation,
+    ]
 
     def get_queryset(self):
         user = self.request.user
 
-        # Managers and Admins can manage all clients.
+        # Managers and Admins can access all clients.
         if is_manager_or_admin(user):
             return Client.objects.all()
 
@@ -80,6 +118,7 @@ class ClientDashboardAPIView(
     """
 
     serializer_class = ClientDashboardSerializer
+
     permission_classes = [
         IsAuthenticated,
     ]
