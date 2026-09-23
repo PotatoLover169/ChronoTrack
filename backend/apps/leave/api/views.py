@@ -16,7 +16,9 @@ from apps.approvals.permissions import (
 
 from apps.leave.exceptions import (
     InsufficientLeaveBalanceError,
+    InvalidLeaveDatesError,
     LeaveRequestAlreadyReviewedError,
+    PendingLeaveRequestExistsError,
 )
 
 
@@ -109,6 +111,7 @@ class MyLeaveBalanceListView(
             )
         )
 
+
 class ManageLeaveBalanceListView(
     generics.ListAPIView,
 ):
@@ -165,6 +168,7 @@ class ManageLeaveBalanceListView(
             )
 
         return queryset
+
 
 class UpdateLeaveBalanceView(
     generics.GenericAPIView,
@@ -236,9 +240,10 @@ class UpdateLeaveBalanceView(
             status=status.HTTP_200_OK,
         )
 
-# ============================================================
-# CREATE LEAVE REQUEST
-# ============================================================
+
+# ======================================================
+# Leave Settlement
+# ======================================================
 
 class CreateLeaveSettlementView(
     generics.CreateAPIView,
@@ -315,6 +320,11 @@ class CreateLeaveSettlementView(
             status=status.HTTP_201_CREATED,
         )
 
+
+# ======================================================
+# Create Leave Request
+# ======================================================
+
 class CreateLeaveRequestView(
     generics.CreateAPIView,
 ):
@@ -331,37 +341,66 @@ class CreateLeaveRequestView(
         IsEmployee,
     )
 
-    def perform_create(
+    def create(
         self,
-        serializer,
+        request,
+        *args,
+        **kwargs,
     ):
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
         data = serializer.validated_data
 
         try:
             leave_request = create_leave_request(
-                employee=self.request.user,
+                employee=request.user,
                 leave_type=data["leave_type"],
                 start_date=data["start_date"],
                 end_date=data["end_date"],
                 reason=data["reason"],
             )
 
-        except InsufficientLeaveBalanceError as exc:
-            raise serializers.ValidationError(
+        except (
+            InsufficientLeaveBalanceError,
+            InvalidLeaveDatesError,
+            PendingLeaveRequestExistsError,
+        ) as exc:
+            return Response(
                 {
                     "detail": str(exc),
-                }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         except ValueError as exc:
-            raise serializers.ValidationError(
+            return Response(
                 {
                     "detail": str(exc),
-                }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer.instance = leave_request
+        response_serializer = (
+            self.get_serializer(
+                leave_request,
+            )
+        )
 
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+# ======================================================
+# Employee Leave Requests
+# ======================================================
 
 class MyLeaveRequestListView(
     generics.ListAPIView,
@@ -391,6 +430,7 @@ class MyLeaveRequestListView(
             )
         )
 
+
 class MyLeaveRequestDetailView(
     generics.RetrieveAPIView,
 ):
@@ -415,6 +455,7 @@ class MyLeaveRequestDetailView(
                 "reviewed_by",
             )
         )
+
 
 class CancelLeaveRequestView(
     generics.GenericAPIView,
@@ -613,6 +654,7 @@ class ApproveLeaveRequestView(
             },
             status=status.HTTP_200_OK,
         )
+
 
 class RejectLeaveRequestView(
     generics.GenericAPIView,
