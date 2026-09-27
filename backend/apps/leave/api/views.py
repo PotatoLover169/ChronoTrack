@@ -10,7 +10,10 @@ from rest_framework.response import Response
 
 from apps.approvals.permissions import (
     IsEmployee,
-    IsManagerOrAdmin,
+)
+
+from apps.accounts.api.permissions import (
+    IsManagerOrAdminRole,
 )
 
 
@@ -123,7 +126,7 @@ class ManageLeaveBalanceListView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def get_queryset(self):
@@ -184,7 +187,7 @@ class UpdateLeaveBalanceView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def get_queryset(self):
@@ -259,7 +262,7 @@ class CreateLeaveSettlementView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def create(
@@ -519,7 +522,7 @@ class PendingLeaveRequestListView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def get_queryset(self):
@@ -569,7 +572,7 @@ class LeaveRequestDetailView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def get_queryset(self):
@@ -595,7 +598,7 @@ class ApproveLeaveRequestView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def get_queryset(self):
@@ -667,7 +670,7 @@ class RejectLeaveRequestView(
 
     permission_classes = (
         IsAuthenticated,
-        IsManagerOrAdmin,
+        IsManagerOrAdminRole,
     )
 
     def get_queryset(self):
