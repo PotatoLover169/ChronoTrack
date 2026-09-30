@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from .models import LeaveBalance, LeaveRequest, LeaveType
+from apps.leave.models import LeaveBalance, LeaveRequest, LeaveType
 
 
 User = get_user_model()
