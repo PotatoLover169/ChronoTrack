@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 
+from django.db import models
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -362,22 +363,46 @@ def get_project_report(
     project_id,
 ):
     """
-    Return a report for a single project.
+    Return a report for a specific project.
+
+    Managers and Admins can access all projects.
+    Employees can access projects they own or are members of.
+    Project reports contain all completed time entries
+    recorded against the project.
     """
 
-    project = get_object_or_404(
-        Project,
-        id=project_id,
-        owner=user,
+    is_manager_or_admin = (
+        user.is_superuser
+        or user.groups.filter(
+            name__in=["Manager", "Admin"]
+        ).exists()
     )
+
+    if is_manager_or_admin:
+
+        project = get_object_or_404(
+            Project,
+            id=project_id,
+        )
+
+    else:
+
+        project = get_object_or_404(
+            Project.objects.filter(
+                id=project_id,
+            ).filter(
+                models.Q(owner=user)
+                | models.Q(members=user)
+            )
+        )
 
     entries = (
         TimeEntry.objects.filter(
-            owner=user,
             project=project,
             status=TimeEntryStatus.COMPLETED,
         )
         .select_related(
+            "owner",
             "project",
             "task",
         )
@@ -405,9 +430,12 @@ def get_project_report(
         total_hours += hours
 
         if entry.billable:
+
             billable_hours += hours
             total_earnings += entry.earnings
+
         else:
+
             non_billable_hours += hours
 
     return {
