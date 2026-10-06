@@ -3,13 +3,11 @@ from rest_framework.permissions import BasePermission
 
 class IsEmployee(BasePermission):
     """
-    Allows any authenticated employee to create, view,
-    and cancel their own edit requests.
+    Allows authenticated users to access employee-level
+    edit-request endpoints.
     """
 
-    message = (
-        "Authentication is required."
-    )
+    message = "Authentication is required."
 
     def has_permission(self, request, view):
         return (
@@ -20,7 +18,8 @@ class IsEmployee(BasePermission):
 
 class IsManagerOrAdmin(BasePermission):
     """
-    Allows only managers or administrators.
+    Allows only users assigned to the Manager or Admin role.
+    Superusers are also allowed.
     """
 
     message = (
@@ -30,11 +29,12 @@ class IsManagerOrAdmin(BasePermission):
     def has_permission(self, request, view):
         user = request.user
 
+        if not user or not user.is_authenticated:
+            return False
+
         return (
-            user
-            and user.is_authenticated
-            and (
-                user.is_staff
-                or user.is_superuser
-            )
+            user.is_superuser
+            or user.groups.filter(
+                name__in=["Manager", "Admin"],
+            ).exists()
         )
