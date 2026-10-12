@@ -17,6 +17,7 @@ import TimeTracking from "../pages/employee/TimeTracking/TimeTracking";
 import Reports from "../pages/employee/Reports/Reports";
 import Clients from "../pages/employee/Clients/Clients";
 import Leave from "../pages/employee/Leave/Leave";
+import Notifications from "../pages/employee/Notifications/Notifications";
 
 // Manager pages
 import ManagerDashboard from "../pages/manager/Dashboard/Dashboard";
@@ -94,6 +95,12 @@ function AppRoutes() {
               element={<Leave />}
             />
 
+            {/* Employee Notifications */}
+            <Route
+              path="/notifications"
+              element={<Notifications />}
+            />
+
           </Route>
         </Route>
 
@@ -153,6 +160,12 @@ function AppRoutes() {
               element={<Leave />}
             />
 
+            {/* Manager Notifications */}
+            <Route
+              path="/manager/notifications"
+              element={<Notifications />}
+            />
+
           </Route>
         </Route>
 
@@ -210,6 +223,12 @@ function AppRoutes() {
             <Route
               path="/admin/leave"
               element={<Leave />}
+            />
+
+            {/* Admin Notifications */}
+            <Route
+              path="/admin/notifications"
+              element={<Notifications />}
             />
 
           </Route>
