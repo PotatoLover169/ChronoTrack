@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+
 import "../../styles/header.css";
 
 function ManagerHeader() {
@@ -12,14 +13,20 @@ function ManagerHeader() {
     "/manager/reports": "Reports",
     "/manager/clients": "Clients",
     "/manager/leave": "Leave",
+    "/manager/notifications": "Notifications",
+    "/settings": "Settings",
   };
 
-  const pageTitle = pageTitles[location.pathname] || "Manager Dashboard";
+  const pageTitle =
+    pageTitles[location.pathname] || "Manager Dashboard";
 
   return (
     <header className="employee-header">
       <div className="header-left">
-        <span className="header-section-label">Workspace</span>
+        <span className="header-section-label">
+          Workspace
+        </span>
+
         <h1>{pageTitle}</h1>
       </div>
 
