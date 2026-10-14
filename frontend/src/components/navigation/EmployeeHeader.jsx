@@ -1,11 +1,27 @@
-import useAuth from "../../hooks/useAuth";
+import { useLocation } from "react-router-dom";
 
+import useAuth from "../../hooks/useAuth";
 import "../../styles/header.css";
 
 function EmployeeHeader() {
   const { user } = useAuth();
+  const location = useLocation();
 
   const role = user?.role || "Employee";
+
+  const pageTitles = {
+    "/": "Dashboard",
+    "/tasks": "Tasks",
+    "/time-tracking": "Time Tracking",
+    "/reports": "Reports",
+    "/clients": "Clients",
+    "/leave": "Leave",
+    "/notifications": "Notifications",
+    "/settings": "Settings",
+  };
+
+  const pageTitle =
+    pageTitles[location.pathname] || "Dashboard";
 
   return (
     <header className="employee-header">
@@ -16,7 +32,7 @@ function EmployeeHeader() {
           </p>
 
           <h1 className="employee-header-title">
-            Dashboard
+            {pageTitle}
           </h1>
         </div>
       </div>
