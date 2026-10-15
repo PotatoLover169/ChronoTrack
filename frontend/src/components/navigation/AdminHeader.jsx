@@ -12,6 +12,7 @@ function AdminHeader() {
     "/admin/reports": "Reports",
     "/admin/time-tracking": "Time Tracking",
     "/admin/leave": "Leave",
+    "/admin/notifications": "Notifications",
   };
 
   const pageTitle = pageTitles[location.pathname] || "Admin Dashboard";

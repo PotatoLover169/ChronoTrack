@@ -4,7 +4,8 @@ from django.db import models
 
 class Notification(models.Model):
     TYPE_CHOICES = [
-        ("timer", "Timer"),
+        ("timer", "Timer"),  # Keep for compatibility with existing notifications
+        ("tracker", "Time Tracking"),
         ("task", "Task"),
         ("project", "Project"),
         ("approval", "Approval"),
