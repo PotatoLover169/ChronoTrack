@@ -53,6 +53,7 @@ function formatDate(value) {
 function getTypeLabel(type) {
   const labels = {
     timer: "Time tracking",
+    tracker: "Time Tracking",
     task: "Task",
     project: "Project",
     approval: "Approval",
