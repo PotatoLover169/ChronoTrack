@@ -18,6 +18,7 @@ import Reports from "../pages/employee/Reports/Reports";
 import Clients from "../pages/employee/Clients/Clients";
 import Leave from "../pages/employee/Leave/Leave";
 import Notifications from "../pages/employee/Notifications/Notifications";
+import Settings from "../pages/employee/Settings/Settings";
 
 // Manager pages
 import ManagerDashboard from "../pages/manager/Dashboard/Dashboard";
@@ -28,214 +29,70 @@ import AdminDashboard from "../pages/admin/Dashboard/Dashboard";
 function AppRoutes() {
   return (
     <Routes>
-
       {/* =====================================================
           AUTHENTICATION
       ===================================================== */}
 
-      <Route
-        path="/login"
-        element={<Login />}
-      />
-
+      <Route path="/login" element={<Login />} />
 
       {/* =====================================================
           PROTECTED APPLICATION
       ===================================================== */}
 
       <Route element={<ProtectedRoute />}>
-
-
         {/* ===================================================
             EMPLOYEE ROUTES
         =================================================== */}
 
-        <Route
-          element={
-            <RoleRoute
-              allowedRoles={["Employee"]}
-            />
-          }
-        >
+        <Route element={<RoleRoute allowedRoles={["Employee"]} />}>
           <Route element={<EmployeeLayout />}>
-
-            {/* Employee Dashboard */}
-            <Route
-              path="/"
-              element={<Dashboard />}
-            />
-
-            {/* Employee Tasks */}
-            <Route
-              path="/tasks"
-              element={<Tasks />}
-            />
-
-            {/* Employee Time Tracking */}
-            <Route
-              path="/time-tracking"
-              element={<TimeTracking />}
-            />
-
-            {/* Employee Reports */}
-            <Route
-              path="/reports"
-              element={<Reports />}
-            />
-
-            {/* Employee Clients */}
-            <Route
-              path="/clients"
-              element={<Clients />}
-            />
-
-            {/* Employee Leave */}
-            <Route
-              path="/leave"
-              element={<Leave />}
-            />
-
-            {/* Employee Notifications */}
-            <Route
-              path="/notifications"
-              element={<Notifications />}
-            />
-
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/time-tracking" element={<TimeTracking />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/leave" element={<Leave />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
-
 
         {/* ===================================================
             MANAGER ROUTES
         =================================================== */}
 
-        <Route
-          element={
-            <RoleRoute
-              allowedRoles={["Manager"]}
-            />
-          }
-        >
+        <Route element={<RoleRoute allowedRoles={["Manager"]} />}>
           <Route element={<ManagerLayout />}>
-
-            {/* Manager Dashboard */}
-            <Route
-              path="/manager"
-              element={<ManagerDashboard />}
-            />
-
-            {/* Manager Projects */}
-            <Route
-              path="/manager/projects"
-              element={<Projects />}
-            />
-
-            {/* Manager Tasks */}
-            <Route
-              path="/manager/tasks"
-              element={<Tasks />}
-            />
-
-            {/* Manager Time Tracking */}
-            <Route
-              path="/manager/time-tracking"
-              element={<TimeTracking />}
-            />
-
-            {/* Manager Reports */}
-            <Route
-              path="/manager/reports"
-              element={<Reports />}
-            />
-
-            {/* Manager Clients */}
-            <Route
-              path="/manager/clients"
-              element={<Clients />}
-            />
-
-            {/* Manager Leave */}
-            <Route
-              path="/manager/leave"
-              element={<Leave />}
-            />
-
-            {/* Manager Notifications */}
-            <Route
-              path="/manager/notifications"
-              element={<Notifications />}
-            />
-
+            <Route path="/manager" element={<ManagerDashboard />} />
+            <Route path="/manager/projects" element={<Projects />} />
+            <Route path="/manager/tasks" element={<Tasks />} />
+            <Route path="/manager/time-tracking" element={<TimeTracking />} />
+            <Route path="/manager/reports" element={<Reports />} />
+            <Route path="/manager/clients" element={<Clients />} />
+            <Route path="/manager/leave" element={<Leave />} />
+            <Route path="/manager/notifications" element={<Notifications />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
-
 
         {/* ===================================================
             ADMIN ROUTES
         =================================================== */}
 
-        <Route
-          element={
-            <RoleRoute
-              allowedRoles={["Admin"]}
-            />
-          }
-        >
+        <Route element={<RoleRoute allowedRoles={["Admin"]} />}>
           <Route element={<AdminLayout />}>
-
-            {/* Admin Dashboard */}
-            <Route
-              path="/admin"
-              element={<AdminDashboard />}
-            />
-
-            {/* Admin Projects */}
-            <Route
-              path="/admin/projects"
-              element={<Projects />}
-            />
-
-            {/* Admin Tasks */}
-            <Route
-              path="/admin/tasks"
-              element={<Tasks />}
-            />
-
-            {/* Admin Clients */}
-            <Route
-              path="/admin/clients"
-              element={<Clients />}
-            />
-
-            {/* Admin Reports */}
-            <Route
-              path="/admin/reports"
-              element={<Reports />}
-            />
-
-            {/* Admin Time Tracking */}
-            <Route
-              path="/admin/time-tracking"
-              element={<TimeTracking />}
-            />
-
-            {/* Admin Leave */}
-            <Route
-              path="/admin/leave"
-              element={<Leave />}
-            />
-
-            {/* Admin Notifications */}
-            <Route
-              path="/admin/notifications"
-              element={<Notifications />}
-            />
-
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/projects" element={<Projects />} />
+            <Route path="/admin/tasks" element={<Tasks />} />
+            <Route path="/admin/clients" element={<Clients />} />
+            <Route path="/admin/reports" element={<Reports />} />
+            <Route path="/admin/time-tracking" element={<TimeTracking />} />
+            <Route path="/admin/leave" element={<Leave />} />
+            <Route path="/admin/notifications" element={<Notifications />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
-
       </Route>
-
     </Routes>
   );
 }

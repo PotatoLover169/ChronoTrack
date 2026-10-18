@@ -1,0 +1,132 @@
+
+.settings-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 28px;
+  color: #18181b;
+}
+
+.settings-page-header {
+  margin-bottom: 24px;
+}
+
+.settings-eyebrow {
+  margin: 0 0 8px;
+  color: #4f46e5;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.settings-page-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.settings-description {
+  margin: 8px 0 0;
+  color: #71717a;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.settings-panel {
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.settings-panel-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.settings-panel-heading h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.settings-panel-heading p {
+  margin: 5px 0 0;
+  color: #71717a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+}
+
+.settings-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 18px 0;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.settings-detail-row span {
+  color: #71717a;
+  font-size: 12px;
+}
+
+.settings-detail-row strong {
+  overflow-wrap: anywhere;
+  color: #27272a;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-notice {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #f6f7f9;
+  color: #52525b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .settings-page {
+    padding-top: 16px;
+  }
+
+  .settings-page-header h2 {
+    font-size: 24px;
+  }
+
+  .settings-panel {
+    padding: 18px;
+  }
+
+  .settings-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

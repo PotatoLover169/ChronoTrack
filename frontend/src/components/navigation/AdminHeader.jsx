@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import "../../styles/header.css";
 
@@ -13,6 +14,7 @@ function AdminHeader() {
     "/admin/time-tracking": "Time Tracking",
     "/admin/leave": "Leave",
     "/admin/notifications": "Notifications",
+    "/settings": "Settings",
   };
 
   const pageTitle = pageTitles[location.pathname] || "Admin Dashboard";
