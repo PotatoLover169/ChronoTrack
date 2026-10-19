@@ -8,6 +8,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from apps.clients.models import Client
+from apps.notifications.models import Notification
 from apps.projects.models import Project
 from apps.tasks.models import Task
 
@@ -137,6 +138,27 @@ class TrackerServiceTestCase(TestCase):
             entry.start_time,
         )
 
+        # Verify that starting the timer creates a notification.
+        notification = Notification.objects.get(
+            recipient=self.employee,
+            notification_type="tracker",
+            title="Timer Started",
+        )
+
+        self.assertEqual(
+            notification.message,
+            f"Timer started for {self.project.name}.",
+        )
+
+        self.assertEqual(
+            Notification.objects.filter(
+                recipient=self.employee,
+                notification_type="tracker",
+                title="Timer Started",
+            ).count(),
+            1,
+        )
+
     def test_employee_can_start_timer_with_assigned_task(self):
         entry = start_timer(
             user=self.employee,
@@ -193,6 +215,19 @@ class TrackerServiceTestCase(TestCase):
             project=self.project,
         )
 
+        # The first successful start should create one notification.
+        initial_notification_count = Notification.objects.filter(
+            recipient=self.employee,
+            notification_type="tracker",
+            title="Timer Started",
+        ).count()
+
+        self.assertEqual(
+            initial_notification_count,
+            1,
+        )
+
+        # Starting another timer must raise an error.
         with self.assertRaises(
             TimerAlreadyRunningError
         ):
@@ -200,6 +235,16 @@ class TrackerServiceTestCase(TestCase):
                 user=self.employee,
                 project=self.project,
             )
+
+        # A failed start must not create another notification.
+        self.assertEqual(
+            Notification.objects.filter(
+                recipient=self.employee,
+                notification_type="tracker",
+                title="Timer Started",
+            ).count(),
+            initial_notification_count,
+        )
 
     # --------------------------------------------------
     # TIMER ACCESS
@@ -331,13 +376,56 @@ class TrackerServiceTestCase(TestCase):
             -1,
         )
 
+        # Verify that stopping the timer creates a notification.
+        notification = Notification.objects.get(
+            recipient=self.employee,
+            notification_type="tracker",
+            title="Timer Stopped",
+        )
+
+        self.assertEqual(
+            notification.message,
+            f"Timer stopped for {self.project.name}.",
+        )
+
+        self.assertEqual(
+            Notification.objects.filter(
+                recipient=self.employee,
+                notification_type="tracker",
+                title="Timer Stopped",
+            ).count(),
+            1,
+        )
+
     def test_stop_timer_without_running_timer_raises_error(self):
+        # No timer is running, so no stop notification should exist.
+        initial_notification_count = Notification.objects.filter(
+            recipient=self.employee,
+            notification_type="tracker",
+            title="Timer Stopped",
+        ).count()
+
+        self.assertEqual(
+            initial_notification_count,
+            0,
+        )
+
         with self.assertRaises(
             NoRunningTimerError
         ):
             stop_timer(
                 user=self.employee,
             )
+
+        # A failed stop must not create a notification.
+        self.assertEqual(
+            Notification.objects.filter(
+                recipient=self.employee,
+                notification_type="tracker",
+                title="Timer Stopped",
+            ).count(),
+            initial_notification_count,
+        )
 
     # --------------------------------------------------
     # TIME ENTRY MODEL
